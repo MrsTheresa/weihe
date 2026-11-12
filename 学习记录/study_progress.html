@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <title>学习轨迹 - 卫禾守护平台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17233c;
+      --muted: #8290a7;
+      --line: #e9edf4;
+      --paper: #ffffff;
+      --canvas: #f5f7fb;
+      --blue: #4778f5;
+      --blue-deep: #315fe0;
+      --mint: #35c5a1;
+      --amber: #ffb85c;
+      --rose: #ff8296;
+      --shadow: 0 14px 40px rgba(34, 55, 96, .07);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: "Poppins", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, a { font: inherit; }
+    button { color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(71, 120, 245, .35);
+      outline-offset: 3px;
+    }
+
+    .page { width: min(1120px, calc(100% - 56px)); margin: 0 auto; padding: 32px 0 52px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+    .brand-mark {
+      display: grid; width: 38px; height: 38px; place-items: center; border-radius: 13px;
+      color: white; background: linear-gradient(145deg, #6e91ff, #4168e8);
+      box-shadow: 0 8px 18px rgba(71, 120, 245, .25);
+    }
+    .brand-mark svg { width: 20px; height: 20px; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 9px; padding: 10px 15px;
+      border: 1px solid var(--line); border-radius: 12px; background: white;
+      color: #64728a; font-size: 13px; font-weight: 600; transition: .2s ease;
+    }
+    .back-link:hover { transform: translateX(-3px); border-color: #cbd7f2; color: var(--blue); }
+    .back-link svg { width: 16px; height: 16px; }
+
+    .hero {
+      position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;
+      min-height: 220px; padding: 34px 42px; margin-bottom: 22px; border-radius: 26px;
+      color: white; background: linear-gradient(112deg, #233b78 0%, #3155a6 56%, #4c76d7 100%);
+      box-shadow: 0 18px 42px rgba(49, 79, 151, .2);
+      animation: rise-in .7s both;
+    }
+    .hero::before, .hero::after {
+      content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+      background: rgba(255,255,255,.07);
+    }
+    .hero::before { width: 330px; height: 330px; right: 12%; top: -218px; }
+    .hero::after { width: 250px; height: 250px; right: -54px; bottom: -174px; }
+    .hero-copy { z-index: 1; max-width: 580px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 7px; color: #cad7ff; font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .eyebrow svg { width: 15px; height: 15px; }
+    h1 { margin: 12px 0 8px; font-size: clamp(26px, 3vw, 34px); letter-spacing: -.03em; }
+    .hero-copy p { margin: 0; color: #d7e0ff; font-size: 14px; line-height: 1.8; }
+    .hero-highlight {
+      position: relative; z-index: 1; display: flex; align-items: center; gap: 16px;
+      min-width: 220px; padding: 18px 20px; border: 1px solid rgba(255,255,255,.2);
+      border-radius: 18px; background: rgba(255,255,255,.11); backdrop-filter: blur(8px);
+    }
+    .streak-icon { display: grid; width: 46px; height: 46px; place-items: center; border-radius: 15px; background: rgba(255,184,92,.18); color: #ffd08e; }
+    .streak-icon svg { width: 25px; height: 25px; }
+    .streak-number { font-size: 25px; font-weight: 700; line-height: 1; }
+    .streak-label { margin-top: 6px; color: #d7e0ff; font-size: 12px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .stat-card, .panel { border: 1px solid rgba(231, 236, 245, .85); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+    .stat-card { position: relative; overflow: hidden; min-height: 142px; padding: 20px; animation: rise-in .65s both; }
+    .stat-card:nth-child(2) { animation-delay: .08s; }
+    .stat-card:nth-child(3) { animation-delay: .16s; }
+    .stat-card:nth-child(4) { animation-delay: .24s; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .stat-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 12px; }
+    .stat-icon svg { width: 18px; height: 18px; }
+    .stat-icon.blue { background: #edf2ff; color: var(--blue); }
+    .stat-icon.mint { background: #e8faf5; color: #24ad8a; }
+    .stat-icon.amber { background: #fff5e8; color: #ee9b32; }
+    .stat-icon.rose { background: #fff0f2; color: #ed6f85; }
+    .stat-value { display: flex; align-items: baseline; gap: 5px; margin-top: 14px; font-size: 27px; font-weight: 700; letter-spacing: -.04em; }
+    .stat-value small { color: #7d8aa0; font-size: 12px; font-weight: 500; letter-spacing: 0; }
+    .stat-foot { margin-top: 5px; color: #9aa5b7; font-size: 12px; }
+    .stat-foot strong { color: #2daf8c; font-weight: 600; }
+
+    .risk-panel { margin-bottom: 20px; animation-delay: .12s; }
+    .risk-heading-meta { display: flex; align-items: center; gap: 7px; color: #9aa5b7; font-size: 12px; white-space: nowrap; }
+    .risk-heading-meta::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #35c5a1; box-shadow: 0 0 0 4px #e8faf5; }
+    .risk-layout { display: grid; grid-template-columns: minmax(200px, .8fr) minmax(300px, 1.35fr) minmax(230px, .9fr); gap: 25px; align-items: center; margin-top: 22px; }
+    .risk-overview { display: flex; align-items: center; gap: 15px; min-height: 148px; padding-right: 20px; border-right: 1px solid var(--line); }
+    .risk-gauge { position: relative; flex: 0 0 106px; width: 106px; height: 106px; }
+    .risk-gauge svg { width: 100%; height: 100%; overflow: visible; }
+    .risk-gauge .gauge-track { fill: none; stroke: #edf2f5; stroke-width: 8; }
+    .risk-gauge .gauge-value {
+      fill: none; stroke: url(#risk-gradient); stroke-width: 8; stroke-linecap: round;
+      stroke-dasharray: 289; stroke-dashoffset: 190.7; transform: rotate(-90deg); transform-origin: 58px 58px;
+      animation: gauge-in 1.15s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .risk-gauge-copy { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .risk-gauge-copy strong { font-size: 27px; line-height: 1; letter-spacing: -.05em; }
+    .risk-gauge-copy span { margin-top: 5px; color: #77869e; font-size: 11px; }
+    .risk-score-copy { min-width: 0; }
+    .risk-level { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 999px; background: #e9faf5; color: #229e7e; font-size: 12px; font-weight: 700; }
+    .risk-level svg { width: 12px; height: 12px; }
+    .risk-score-copy p { margin: 8px 0 0; color: #6f7e95; font-size: 13px; line-height: 1.75; }
+    .risk-factors { min-width: 0; }
+    .risk-subtitle { display: flex; justify-content: space-between; align-items: center; margin: 0 0 15px; font-size: 14px; font-weight: 700; }
+    .risk-subtitle span { color: #7f8da3; font-size: 11px; font-weight: 400; }
+    .risk-factor { margin-top: 13px; }
+    .risk-factor:first-of-type { margin-top: 0; }
+    .risk-factor-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: #56647a; font-size: 12px; }
+    .risk-factor-top strong { color: #354765; font-size: 12px; }
+    .risk-factor-status { margin-left: auto; color: #2da889; font-size: 11px; }
+    .risk-factor.attention .risk-factor-status { color: #de983d; }
+    .risk-track { height: 6px; margin-top: 7px; overflow: hidden; border-radius: 999px; background: #eff2f7; }
+    .risk-fill { width: var(--score); height: 100%; border-radius: inherit; background: linear-gradient(90deg, #5fcdb1, #35b99d); transform-origin: left; animation: risk-fill-in .9s .2s both; }
+    .risk-factor.attention .risk-fill { background: linear-gradient(90deg, #ffd17e, #f1ad50); }
+    .risk-advice { padding: 16px; border: 1px solid #f5ead8; border-radius: 15px; background: linear-gradient(145deg, #fffaf1, #fff); }
+    .risk-advice-top { display: flex; align-items: center; gap: 8px; color: #bd8130; font-size: 12px; font-weight: 700; }
+    .risk-advice-icon { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 9px; background: #fff0d6; }
+    .risk-advice-icon svg { width: 15px; height: 15px; }
+    .risk-advice p { margin: 11px 0 13px; color: #626f82; font-size: 13px; line-height: 1.75; }
+    .risk-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; border: 0; border-radius: 9px; background: #fff0d6; color: #966019; font-size: 12px; font-weight: 700; cursor: pointer; transition: .2s ease; }
+    .risk-action:hover { transform: translateY(-2px); background: #ffe6b7; }
+    .risk-action svg { width: 13px; height: 13px; }
+    .risk-details-toggle { display: flex; align-items: center; gap: 5px; margin-top: 18px; padding: 0; border: 0; background: none; color: #68778e; font-size: 12px; cursor: pointer; }
+    .risk-details-toggle:hover { color: var(--blue); }
+    .risk-details-toggle svg { width: 13px; height: 13px; transition: transform .2s ease; }
+    .risk-details-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .risk-details { margin-top: 12px; padding: 12px 14px; border-radius: 11px; background: #f7f9fc; color: #65748b; font-size: 12px; line-height: 1.8; animation: fade-in .25s both; }
+    .risk-details[hidden] { display: none; }
+    .risk-details strong { color: #4b5a72; }
+    .skill-row.is-focused { margin: -7px; padding: 7px; border-radius: 13px; background: #fff8eb; animation: skill-focus 1.5s ease; }
+
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr); gap: 20px; align-items: stretch; }
+    .panel { padding: 24px; animation: rise-in .65s .18s both; }
+    .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .panel-title { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+    .panel-subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .segmented { display: flex; gap: 3px; padding: 4px; border: 1px solid #edf0f5; border-radius: 10px; background: #f7f8fb; }
+    .segmented button {
+      cursor: pointer; border: 0; border-radius: 7px; padding: 7px 10px;
+      background: transparent; color: #8793a7; font-size: 12px; transition: .2s ease;
+    }
+    .segmented button:hover { color: var(--blue); }
+    .segmented button[aria-pressed="true"] { background: white; color: var(--blue-deep); box-shadow: 0 2px 6px rgba(30, 55, 100, .09); font-weight: 700; }
+    .chart-summary { display: flex; align-items: baseline; gap: 8px; margin: 22px 0 3px; }
+    .chart-total { font-size: 29px; font-weight: 700; letter-spacing: -.04em; }
+    .chart-unit { color: var(--muted); font-size: 13px; }
+    .chart-change { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: #26a984; font-size: 12px; font-weight: 600; }
+    .chart-change svg { width: 13px; height: 13px; }
+    .chart-area { position: relative; margin-top: 13px; }
+    .chart-gridlines { position: absolute; inset: 0 0 25px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+    .chart-gridlines span { position: relative; width: 100%; border-top: 1px dashed #edf0f5; }
+    .chart-gridlines span::before { content: attr(data-label); position: absolute; top: -8px; left: 0; padding-right: 7px; background: white; color: #a4afbf; font-size: 9px; }
+    .bar-chart { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: clamp(8px, 2.3vw, 22px); height: 172px; padding: 8px 2px 0 30px; }
+    .bar-column { position: relative; display: flex; height: 100%; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; }
+    .bar-track { display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 100%; }
+    .bar {
+      position: relative; width: min(28px, 70%); min-height: 7px; border-radius: 7px 7px 3px 3px;
+      background: linear-gradient(180deg, #8ca9ff 0%, #5b7ff1 100%);
+      transform-origin: bottom; transition: height .55s cubic-bezier(.2,.8,.2,1), filter .2s, transform .2s;
+      animation: bar-grow .8s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .bar-column:hover .bar, .bar-column:focus-within .bar { filter: saturate(1.25); transform: scaleX(1.12); }
+    .bar-column.today .bar { background: linear-gradient(180deg, #62d7bd, #35b99d); }
+    .bar-label { color: #8491a5; font-size: 11px; white-space: nowrap; }
+    .bar-column.today .bar-label { color: #31a98f; font-weight: 700; }
+    .bar-tooltip {
+      position: absolute; z-index: 3; bottom: calc(100% + 13px); left: 50%; opacity: 0; visibility: hidden;
+      padding: 7px 9px; border-radius: 8px; background: #24395f; color: white; font-size: 11px;
+      white-space: nowrap; transform: translate(-50%, 4px); transition: .18s ease; pointer-events: none;
+    }
+    .bar-tooltip::after { content: ""; position: absolute; left: calc(50% - 4px); top: 100%; border: 4px solid transparent; border-top-color: #24395f; }
+    .bar-column:hover .bar-tooltip, .bar-column:focus-within .bar-tooltip { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .chart-note { display: flex; align-items: center; gap: 7px; margin: 15px 0 0 30px; color: #7e8ca1; font-size: 11px; }
+    .chart-note i { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); }
+
+    .skills-panel { animation-delay: .26s; }
+    .skill-list { display: grid; gap: 22px; margin-top: 25px; }
+    .skill-row { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 13px; }
+    .skill-ring {
+      --progress: 70%;
+      display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%;
+      background: conic-gradient(var(--ring-color, var(--blue)) var(--progress), #eff2f8 0);
+      transition: background .6s ease;
+    }
+    .skill-ring::before { content: ""; grid-area: 1 / 1; width: 32px; height: 32px; border-radius: 50%; background: white; }
+    .skill-ring span { z-index: 1; grid-area: 1 / 1; color: #495872; font-size: 10px; font-weight: 700; }
+    .skill-info { min-width: 0; }
+    .skill-line { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; }
+    .skill-line span:last-child { color: #718098; font-size: 12px; }
+    .skill-track { height: 5px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: #f0f2f7; }
+    .skill-fill { height: 100%; width: var(--progress); border-radius: inherit; background: var(--ring-color, var(--blue)); animation: fill-in 1s .35s both; }
+    .skills-tip { display: flex; gap: 9px; align-items: flex-start; margin-top: 23px; padding: 12px; border-radius: 12px; background: #f5f8ff; color: #65748b; font-size: 12px; line-height: 1.7; }
+    .skills-tip svg { flex: 0 0 15px; width: 15px; height: 15px; color: var(--blue); margin-top: 1px; }
+
+    .activity-panel { margin-top: 20px; animation-delay: .34s; }
+    .activity-actions { display: flex; align-items: center; gap: 9px; }
+    .filter-select { border: 1px solid #e8edf4; border-radius: 9px; padding: 8px 10px; background: white; color: #6d7b91; font-size: 12px; cursor: pointer; }
+    .activity-list { display: grid; margin-top: 12px; }
+    .activity-item { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 13px; padding: 15px 0; border-bottom: 1px solid #f0f2f6; animation: fade-in .35s both; }
+    .activity-item:last-child { border-bottom: 0; }
+    .activity-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 13px; }
+    .activity-icon svg { width: 18px; height: 18px; }
+    .activity-icon.course { color: #4c78ed; background: #edf2ff; }
+    .activity-icon.quiz { color: #20ab8a; background: #e9faf5; }
+    .activity-icon.live { color: #e99635; background: #fff5e8; }
+    .activity-title { margin: 0; font-size: 13px; font-weight: 600; }
+    .activity-meta { margin: 5px 0 0; color: #7d8ba0; font-size: 11px; }
+    .activity-score { min-width: 65px; text-align: right; color: #718098; font-size: 11px; }
+    .activity-score strong { display: block; color: #354765; font-size: 14px; }
+    .activity-empty { padding: 28px 0; color: var(--muted); text-align: center; font-size: 12px; }
+    .view-all {
+      display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 7px;
+      padding: 10px; border: 1px solid #edf0f5; border-radius: 10px; background: white; color: #73819a;
+      font-size: 12px; cursor: pointer; transition: .2s ease;
+    }
+    .view-all:hover { border-color: #cbd7f2; color: var(--blue); background: #fafbff; }
+    .view-all svg { width: 14px; height: 14px; transition: transform .2s; }
+    .view-all[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .footer-note { margin: 24px 0 0; color: #8995a8; text-align: center; font-size: 11px; }
+
+    @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes bar-grow { from { transform: scaleY(.1); } to { transform: scaleY(1); } }
+    @keyframes fill-in { from { width: 0; } to { width: var(--progress); } }
+    @keyframes gauge-in { from { stroke-dashoffset: 289; } to { stroke-dashoffset: 190.7; } }
+    @keyframes risk-fill-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes skill-focus { 0%, 100% { box-shadow: 0 0 0 0 rgba(243, 173, 80, 0); } 35% { box-shadow: 0 0 0 5px rgba(243, 173, 80, .16); } }
+    @media (max-width: 820px) {
+      .page { width: min(100% - 36px, 680px); padding-top: 22px; }
+      .hero { padding: 28px; }
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+      .risk-layout { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 20px; }
+      .risk-overview { border-right: 0; padding-right: 0; }
+      .risk-advice { grid-column: 1 / -1; }
+    }
+    @media (max-width: 520px) {
+      .page { width: calc(100% - 28px); padding-top: 16px; }
+      .topbar { margin-bottom: 18px; }
+      .brand { font-size: 13px; }
+      .back-link { padding: 9px 10px; font-size: 11px; }
+      .hero { min-height: auto; align-items: flex-start; flex-direction: column; gap: 20px; padding: 25px 22px; border-radius: 21px; }
+      .hero-copy p { font-size: 12px; }
+      .hero-highlight { min-width: 0; padding: 12px 14px; }
+      .streak-icon { width: 39px; height: 39px; }
+      .stats-grid { gap: 10px; margin-bottom: 14px; }
+      .stat-card { min-height: 128px; padding: 14px; border-radius: 16px; }
+      .stat-top { font-size: 11px; }
+      .stat-icon { width: 31px; height: 31px; }
+      .stat-value { font-size: 23px; }
+      .stat-foot { font-size: 10px; }
+      .panel { padding: 18px 15px; border-radius: 17px; }
+      .panel-heading { gap: 8px; }
+      .panel-title { font-size: 16px; }
+      .panel-subtitle { font-size: 12px; }
+      .risk-heading-meta { font-size: 11px; }
+      .risk-heading-meta::before { width: 8px; height: 8px; }
+      .risk-layout { grid-template-columns: 1fr; gap: 18px; }
+      .risk-overview { min-height: 0; justify-content: center; }
+      .risk-factors { padding-top: 17px; border-top: 1px solid var(--line); }
+      .risk-advice { grid-column: auto; }
+      .segmented button { padding: 7px 8px; font-size: 12px; }
+      .bar-chart { gap: 7px; height: 150px; }
+      .activity-item { grid-template-columns: 36px 1fr auto; gap: 9px; }
+      .activity-icon { width: 35px; height: 35px; border-radius: 11px; }
+      .activity-title { font-size: 12px; }
+      .activity-meta { font-size: 10px; }
+      .activity-score { min-width: 48px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="../training.html" aria-label="卫禾守护平台，返回学习页面">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 19 6v5c0 4.5-2.9 7.8-7 10-4.1-2.2-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span>卫禾守护平台</span>
+      </a>
+      <a class="back-link" href="../training.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 18-6-6 6-6M8 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        返回学习中心
+      </a>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <span class="eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5m0 14h17M7 15l4-4 3 2 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          MY LEARNING JOURNEY
+        </span>
+        <h1 id="page-title">每一步成长，都值得记录</h1>
+        <p>持续学习，让法律知识成为守护自己的力量。来看看你最近的进步吧。</p>
+      </div>
+      <div class="hero-highlight">
+        <span class="streak-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13.2 2.8c.5 3.2-2.4 4.5-2.4 7 0 1.2.7 2 1.7 2.4-.2-1.6.9-2.7 2-3.5 2.1 1.7 3.4 3.7 3.4 6.2a5.9 5.9 0 1 1-11.8 0c0-2.3 1.1-4.2 3.1-6.1-.1 2.1.4 3.1 1.3 3.7-.2-4 1.1-7.1 2.7-9.7Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div>
+          <div class="streak-number"><span data-count="15">0</span><small> 天</small></div>
+          <div class="streak-label">连续学习打卡</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-grid" aria-label="学习数据概览">
+      <article class="stat-card">
+        <div class="stat-top"><span>课程完成率</span><span class="stat-icon blue" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 17a2.5 2.5 0 0 1 2.5-2.5H20M8 7h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span></div>
+        <div class="stat-value"><span data-count="86">0</span><small>%</small></div>
+        <div class="stat-foot"><strong>+8%</strong> 较上周</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-top"><span>本周学习时长</span><span class="stat-icon mint" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span></div>
+        <div class="stat-value"><span data-count="5">0</span><small>小时</small><span data-count="24">0</span><small>分</small></div>
+        <div class="stat-foot"><strong>+1.2小时</strong> 较上周</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-top"><span>平均测验得分</span><span class="stat-icon amber" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18m5-14.5c0-1.4-1.8-2.5-4-2.5S9 5.1 9 6.5 10.8 9 13 9s4 1.1 4 2.5-1.8 2.5-4 2.5-4-1.1-4-2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span></div>
+        <div class="stat-value"><span data-count="92">0</span><small>分</small></div>
+        <div class="stat-foot"><strong>+4分</strong> 较上周</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-top"><span>已完成课程</span><span class="stat-icon rose" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="stat-value"><span data-count="18">0</span><small>门</small></div>
+        <div class="stat-foot">继续保持，向 <strong>20门</strong> 进发</div>
+      </article>
+    </section>
+
+    <section class="panel risk-panel" aria-labelledby="risk-title">
+      <div class="panel-heading">
+        <div>
+          <h2 class="panel-title" id="risk-title">学习风险评估</h2>
+          <p class="panel-subtitle">从能力掌握与学习习惯中，提前发现需要关注的方向</p>
+        </div>
+        <span class="risk-heading-meta">本周评估 · 示例数据</span>
+      </div>
+      <div class="risk-layout">
+        <div class="risk-overview">
+          <div class="risk-gauge">
+            <svg viewBox="0 0 116 116" role="img" aria-label="综合学习风险指数34分，低风险">
+              <defs>
+                <linearGradient id="risk-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6bd8bc" />
+                  <stop offset="100%" stop-color="#34b99b" />
+                </linearGradient>
+              </defs>
+              <circle class="gauge-track" cx="58" cy="58" r="46" />
+              <circle class="gauge-value" cx="58" cy="58" r="46" />
+            </svg>
+            <div class="risk-gauge-copy">
+              <strong><span data-count="34">0</span></strong>
+              <span>风险指数</span>
+            </div>
+          </div>
+          <div class="risk-score-copy">
+            <span class="risk-level">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              低风险
+            </span>
+            <p>整体学习状态稳定，当前有一个能力方向值得优先加强。</p>
+          </div>
+        </div>
+        <div class="risk-factors" aria-label="学习风险评估维度">
+          <h3 class="risk-subtitle">关键评估维度 <span>掌握度越低，越需关注</span></h3>
+          <div class="risk-factor attention">
+            <div class="risk-factor-top"><strong>自我防护</strong><span class="risk-factor-status">待加强</span><strong>65%</strong></div>
+            <div class="risk-track" role="meter" aria-label="自我防护掌握度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="65"><div class="risk-fill" style="--score:65%"></div></div>
+          </div>
+          <div class="risk-factor">
+            <div class="risk-factor-top"><strong>法律认识</strong><span class="risk-factor-status">良好</span><strong>72%</strong></div>
+            <div class="risk-track" role="meter" aria-label="法律认识掌握度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><div class="risk-fill" style="--score:72%"></div></div>
+          </div>
+          <div class="risk-factor">
+            <div class="risk-factor-top"><strong>守护能力</strong><span class="risk-factor-status">表现稳定</span><strong>81%</strong></div>
+            <div class="risk-track" role="meter" aria-label="守护能力掌握度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="81"><div class="risk-fill" style="--score:81%"></div></div>
+          </div>
+        </div>
+        <aside class="risk-advice">
+          <div class="risk-advice-top">
+            <span class="risk-advice-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18m0-18 3 3m-3-3L9 6m3 15 3-3m-3 3-3-3M4 8h4m-4 0 2-2M4 8l2 2m14 6h-4m4 0-2-2m2 2-2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            个性化学习建议
+          </div>
+          <p><strong>自我防护掌握度为 65%</strong>，建议优先复习相关专题，补齐当前能力短板。</p>
+          <button class="risk-action" id="focus-risk-skill" type="button">
+            定位提升方向
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </aside>
+      </div>
+      <button class="risk-details-toggle" id="risk-details-toggle" type="button" aria-expanded="false" aria-controls="risk-details">
+        <span>评估说明与指标口径</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="risk-details" id="risk-details" hidden>
+        <strong>风险指数为学习提醒，不是个人安全风险定论。</strong> 当前页面用示例数据综合展示知识掌握度、学习稳定性与能力短板；实际应用应基于真实学习记录计算并定期更新。指数越低代表当前学习指标越稳定，发现薄弱项时可参考建议进行补学。
+      </div>
+    </section>
+
+    <section class="content-grid" aria-label="学习趋势与能力进度">
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <h2 class="panel-title">学习时长趋势</h2>
+            <p class="panel-subtitle" id="chart-description">看看每天投入了多少时间</p>
+          </div>
+          <div class="segmented" role="group" aria-label="选择趋势时间范围">
+            <button type="button" data-period="week" aria-pressed="true">近 7 天</button>
+            <button type="button" data-period="month" aria-pressed="false">近 30 天</button>
+          </div>
+        </div>
+        <div class="chart-summary" aria-live="polite">
+          <strong class="chart-total" id="chart-total">5.4</strong>
+          <span class="chart-unit">小时</span>
+          <span class="chart-change">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 15 5-5 4 3 5-7M14 6h5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            较前期增长 12%
+          </span>
+        </div>
+        <div class="chart-area">
+          <div class="chart-gridlines" aria-hidden="true"><span data-label="3h"></span><span data-label="2h"></span><span data-label="1h"></span><span data-label="0"></span></div>
+          <div class="bar-chart" id="bar-chart" role="img" aria-label="近7天每日学习时长柱状图"></div>
+        </div>
+        <div class="chart-note"><i aria-hidden="true"></i><span>今天的学习时间</span></div>
+      </article>
+
+      <article class="panel skills-panel">
+        <div class="panel-heading">
+          <div>
+            <h2 class="panel-title">能力成长</h2>
+            <p class="panel-subtitle">三个方向持续进步中</p>
+          </div>
+        </div>
+        <div class="skill-list">
+          <div class="skill-row">
+            <div class="skill-ring" style="--progress:72%;--ring-color:#6689f2"><span>72%</span></div>
+            <div class="skill-info"><div class="skill-line"><span>法律认识</span><span>稳步提升</span></div><div class="skill-track"><div class="skill-fill" style="--progress:72%;--ring-color:#6689f2"></div></div></div>
+          </div>
+          <div class="skill-row">
+            <div class="skill-ring" style="--progress:81%;--ring-color:#36c3a0"><span>81%</span></div>
+            <div class="skill-info"><div class="skill-line"><span>守护能力</span><span>表现出色</span></div><div class="skill-track"><div class="skill-fill" style="--progress:81%;--ring-color:#36c3a0"></div></div></div>
+          </div>
+          <div class="skill-row" id="self-protection-skill">
+            <div class="skill-ring" style="--progress:65%;--ring-color:#f3ad50"><span>65%</span></div>
+            <div class="skill-info"><div class="skill-line"><span>自我防护</span><span>继续加油</span></div><div class="skill-track"><div class="skill-fill" style="--progress:65%;--ring-color:#f3ad50"></div></div></div>
+          </div>
+        </div>
+        <div class="skills-tip">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16v-4m0-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span>试试“自我防护”专题课程，让你的能力版图更加均衡。</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel activity-panel" aria-labelledby="activity-title">
+      <div class="panel-heading">
+        <div>
+          <h2 class="panel-title" id="activity-title">最近学习动态</h2>
+          <p class="panel-subtitle">每一次专注，都在积累新的能力</p>
+        </div>
+        <div class="activity-actions">
+          <label class="sr-only" for="activity-filter">筛选学习动态</label>
+          <select class="filter-select" id="activity-filter">
+            <option value="all">全部动态</option>
+            <option value="course">课程学习</option>
+            <option value="quiz">测验练习</option>
+            <option value="live">互动活动</option>
+          </select>
+        </div>
+      </div>
+      <div class="activity-list" id="activity-list" aria-live="polite"></div>
+      <button class="view-all" id="view-all" type="button" aria-expanded="false">
+        <span>查看全部动态</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </section>
+    <p class="footer-note">坚持学习的每一天，都是给自己的小小勋章 ✦</p>
+  </main>
+  <style>
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  </style>
+  <script>
+    (function () {
+      const periods = {
+        week: {
+          total: "5.4",
+          labels: ["周五", "周六", "周日", "周一", "周二", "周三", "今天"],
+          minutes: [35, 65, 44, 82, 56, 72, 51],
+          max: 90,
+          axis: ["1.5h", "1h", "0.5h", "0"],
+          current: 6
+        },
+        month: {
+          total: "22.8",
+          labels: ["第1周", "第2周", "第3周", "第4周", "周一", "周二", "本周"],
+          minutes: [205, 302, 242, 380, 224, 319, 272],
+          max: 420,
+          axis: ["7h", "4h40", "2h20", "0"],
+          current: 6
+        }
+      };
+      const activities = [
+        { type: "course", title: "完成《网络安全基础》", meta: "今天 10:24 · 用时 37 分钟", score: "96", unit: "课程得分" },
+        { type: "quiz", title: "完成「个人信息保护」随堂测验", meta: "昨天 16:42 · 用时 12 分钟", score: "92", unit: "测验得分" },
+        { type: "live", title: "参与直播讨论：校园权益", meta: "11月10日 19:30 · 互动 12 次", score: "积极", unit: "互动表现" },
+        { type: "course", title: "学习《安全出行指南》", meta: "11月09日 15:18 · 用时 28 分钟", score: "已完成", unit: "课程进度" },
+        { type: "quiz", title: "完成「生活中的法律常识」练习", meta: "11月08日 11:06 · 用时 9 分钟", score: "88", unit: "测验得分" },
+        { type: "course", title: "完成《未成年人权益保护》", meta: "11月07日 14:36 · 用时 42 分钟", score: "94", unit: "课程得分" }
+      ];
+      const icons = {
+        course: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        quiz: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 4h8l4 4v12H4V4h4Zm7 0v5h5m-9 4 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        live: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v12H9l-5 3V5Zm4 5h8m-8 3h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      };
+      const chart = document.getElementById("bar-chart");
+      const total = document.getElementById("chart-total");
+      const filter = document.getElementById("activity-filter");
+      const list = document.getElementById("activity-list");
+      const viewAll = document.getElementById("view-all");
+      const riskDetailsToggle = document.getElementById("risk-details-toggle");
+      const riskDetails = document.getElementById("risk-details");
+      const riskSkill = document.getElementById("self-protection-skill");
+      let activePeriod = "week";
+      let expanded = false;
+
+      function renderChart(period) {
+        const data = periods[period];
+        total.textContent = data.total;
+        chart.setAttribute("aria-label", period === "week" ? "近7天每日学习时长柱状图" : "近30天每周学习时长柱状图");
+        document.querySelectorAll(".chart-gridlines span").forEach(function (line, index) {
+          line.dataset.label = data.axis[index];
+        });
+        chart.innerHTML = data.labels.map(function (label, index) {
+          const duration = data.minutes[index];
+          return '<div class="bar-column' + (index === data.current ? " today" : "") + '">' +
+            '<div class="bar-track"><div class="bar" tabindex="0" role="img" aria-label="' + label + '，学习' + duration + '分钟" style="height:' + (duration / data.max * 100).toFixed(1) + '%">' +
+            '<span class="bar-tooltip">' + label + ' · ' + duration + ' 分钟</span></div></div>' +
+            '<span class="bar-label">' + label + '</span></div>';
+        }).join("");
+      }
+
+      function renderActivities() {
+        const filtered = activities.filter(function (activity) {
+          return filter.value === "all" || activity.type === filter.value;
+        });
+        const visible = expanded ? filtered : filtered.slice(0, 3);
+        list.innerHTML = visible.length ? visible.map(function (activity) {
+          return '<article class="activity-item">' +
+            '<span class="activity-icon ' + activity.type + '">' + icons[activity.type] + '</span>' +
+            '<div><h3 class="activity-title">' + activity.title + '</h3><p class="activity-meta">' + activity.meta + '</p></div>' +
+            '<div class="activity-score"><strong>' + activity.score + '</strong>' + activity.unit + '</div></article>';
+        }).join("") : '<div class="activity-empty">暂时没有这类动态，试试查看全部吧。</div>';
+        const canExpand = filtered.length > 3;
+        viewAll.hidden = !canExpand;
+        viewAll.setAttribute("aria-expanded", String(expanded));
+        viewAll.querySelector("span").textContent = expanded ? "收起动态" : "查看全部动态";
+      }
+
+      document.querySelectorAll("[data-period]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          activePeriod = button.dataset.period;
+          document.querySelectorAll("[data-period]").forEach(function (item) {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          renderChart(activePeriod);
+        });
+      });
+      filter.addEventListener("change", function () {
+        expanded = false;
+        renderActivities();
+      });
+      viewAll.addEventListener("click", function () {
+        expanded = !expanded;
+        renderActivities();
+      });
+      riskDetailsToggle.addEventListener("click", function () {
+        const isExpanded = riskDetailsToggle.getAttribute("aria-expanded") === "true";
+        riskDetailsToggle.setAttribute("aria-expanded", String(!isExpanded));
+        riskDetails.hidden = isExpanded;
+      });
+      document.getElementById("focus-risk-skill").addEventListener("click", function () {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        riskSkill.scrollIntoView({ behavior: behavior, block: "center" });
+        riskSkill.classList.remove("is-focused");
+        requestAnimationFrame(function () {
+          riskSkill.classList.add("is-focused");
+        });
+        window.setTimeout(function () {
+          riskSkill.classList.remove("is-focused");
+        }, 1600);
+      });
+
+      document.querySelectorAll("[data-count]").forEach(function (element) {
+        const target = Number(element.dataset.count);
+        const start = performance.now();
+        const duration = 850;
+        function tick(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          element.textContent = String(Math.round(target * eased));
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+      renderChart(activePeriod);
+      renderActivities();
+    }());
+  </script>
+</body>
+</html>

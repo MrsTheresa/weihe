@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>进度分享 - 卫禾守护平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a2f62b56a4.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #f0f8ff;
+      --surface: #ffffff;
+      --text: #0e2f5f;
+      --primary: #145a9d;
+      --accent: #0b78da;
+      --border: #dceffe;
+      --radius: 14px;
+    }
+    * {box-sizing: border-box;}
+    body {font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; margin: 0;}
+    .container {max-width: 920px; margin: auto;}
+    .card {background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(17, 75, 146, 0.12); padding: 24px; margin-bottom: 20px;}
+    h1, h2, h3 {margin: 0; color: var(--primary);}
+    h1 {font-size: 28px; margin-bottom: 12px;}
+    h2 {font-size: 18px; margin-bottom: 14px;}
+    h3 {font-size: 15px; margin-bottom: 10px;}
+    p {line-height: 1.65; margin: 8px 0; color: #556c8a;}
+    
+    .preview-container {background: linear-gradient(135deg, #f0f8ff, #f5fcff); border-radius: var(--radius); border: 2px dashed #cce1ff; padding: 20px; margin-top: 16px; text-align: center;}
+    
+    .achievement-card {
+      background: linear-gradient(140deg, rgba(18, 136, 255, 0.9), rgba(0, 198, 178, 0.85));
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 16px 0;
+      box-shadow: 0 12px 28px rgba(18, 136, 255, 0.25);
+      text-align: center;
+    }
+    .achievement-card h4 {margin: 0 0 6px; font-size: 16px; opacity: 0.95;}
+    .achievement-card .main-score {font-size: 48px; font-weight: 700; margin: 10px 0;}
+    .achievement-card .sub-stats {display: flex; justify-content: space-around; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.3); font-size: 13px;}
+    .achievement-card .sub-stat {flex: 1;}
+    .achievement-card .sub-stat-val {font-weight: 700; display: block;}
+    
+    .share-grid {display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px;}
+    .share-option {background: #f8fcff; border: 1px solid #e5f0ff; border-radius: var(--radius); padding: 14px; text-align: center; cursor: pointer; transition: all 0.2s ease;}
+    .share-option:hover {background: #eef7ff; border-color: #d0e4ff; transform: translateY(-2px);}
+    .share-option.active {background: linear-gradient(135deg, #cce1ff, #e0ecff); border-color: var(--accent); box-shadow: 0 8px 16px rgba(11, 120, 218, 0.15);}
+    .share-option i {font-size: 24px; color: var(--accent); display: block; margin-bottom: 6px;}
+    .share-option-label {font-size: 13px; font-weight: 600; color: #1f4d88;}
+    
+    .export-options {background: linear-gradient(120deg, rgba(18, 136, 255, 0.05), rgba(0, 198, 178, 0.05)); border-radius: var(--radius); border: 1px solid #cce1ff; padding: 14px; margin-top: 14px;}
+    .export-options h4 {margin: 0 0 10px; color: var(--primary); font-size: 14px;}
+    .export-buttons {display: flex; gap: 10px; flex-wrap: wrap;}
+    .btn-export {background: linear-gradient(90deg, #1981e8, #238cd2); color: #fff; border: none; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;}
+    .btn-export:hover {transform: translateY(-2px); box-shadow: 0 8px 14px rgba(25, 129, 232, 0.3);}
+    .btn-export i {margin-right: 4px;}
+    
+    .stats-box {display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;}
+    .stat-item {background: #f8fcff; border: 1px solid #e5f0ff; border-radius: var(--radius); padding: 12px; text-align: center;}
+    .stat-item-num {font-size: 20px; font-weight: 700; color: var(--accent); display: block;}
+    .stat-item-label {font-size: 11px; color: #556c8a; margin-top: 4px;}
+    
+    .share-history {margin-top: 14px;}
+    .history-item {display: flex; align-items: center; padding: 10px; background: #f8fcff; border-radius: var(--radius); margin-bottom: 6px; gap: 10px; font-size: 13px;}
+    .history-avatar {width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #63c5ff, #2fa1ff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;}
+    .history-text {flex: 1; color: #556c8a;}
+    .history-time {font-size: 11px; color: #99a8bf;}
+    
+    .tips-box {background: linear-gradient(120deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05)); border-radius: var(--radius); border: 1px solid #ffed4e; padding: 12px; margin-top: 14px;}
+    .tips-box h4 {margin: 0 0 6px; color: #8b7500; font-size: 13px;}
+    .tips-box ul {margin: 0; padding-left: 18px; font-size: 12px; color: #556c8a;}
+    .tips-box li {margin: 3px 0;}
+    
+    .button {display: inline-block; margin-top: 20px; color: #fff; background: linear-gradient(90deg, #1981e8, #238cd2); border: none; border-radius: 999px; padding: 10px 20px; text-decoration: none; font-weight: 600; cursor: pointer; transition: transform 0.2s ease;}
+    .button:hover {transform: translateY(-2px);}
+    
+    @media (max-width: 760px) {
+      body {padding: 24px 16px;}
+      .share-grid {grid-template-columns: 1fr;}
+      .stats-box {grid-template-columns: 1fr;}
+      .export-buttons {flex-direction: column;}
+      .btn-export {width: 100%;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>📊 进度分享</h1>
+      <p>一键生成你的学习成果图，方便与家长、老师或同学分享你的法治学习进展。</p>
+      <p>支持导出 PDF、简历化展示与社交平台分享。</p>
+    </div>
+
+    <div class="card">
+      <h2>🎯 成果预览</h2>
+      <div class="preview-container">
+        <div class="achievement-card">
+          <h4>李明昊 的法治学习成果</h4>
+          <div class="main-score">86%</div>
+          <p style="margin: 0; font-size: 13px; opacity: 0.9;">完成率 · 2026年3月30日</p>
+          <div class="sub-stats">
+            <div class="sub-stat"><span class="sub-stat-val">94分</span>本周成绩</div>
+            <div class="sub-stat"><span class="sub-stat-val">5小时</span>学习时长</div>
+            <div class="sub-stat"><span class="sub-stat-val">15次</span>打卡天数</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📲 分享方式</h2>
+      <div class="share-grid">
+        <div class="share-option active">
+          <i class="fas fa-image"></i>
+          <div class="share-option-label">图片分享</div>
+        </div>
+        <div class="share-option">
+          <i class="fas fa-file-pdf"></i>
+          <div class="share-option-label">PDF导出</div>
+        </div>
+        <div class="share-option">
+          <i class="fas fa-link"></i>
+          <div class="share-option-label">生成链接</div>
+        </div>
+        <div class="share-option">
+          <i class="fas fa-qrcode"></i>
+          <div class="share-option-label">二维码</div>
+        </div>
+      </div>
+      
+      <div class="export-options">
+        <h4>📥 导出与分享</h4>
+        <div class="export-buttons">
+          <button class="btn-export"><i class="fas fa-download"></i>下载图片</button>
+          <button class="btn-export"><i class="fas fa-file-pdf"></i>导出 PDF</button>
+          <button class="btn-export"><i class="fas fa-share-alt"></i>分享到社交</button>
+          <button class="btn-export"><i class="fas fa-copy"></i>复制链接</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📈 分享统计</h2>
+      <div class="stats-box">
+        <div class="stat-item">
+          <span class="stat-item-num">128</span>
+          <span class="stat-item-label">浏览次数</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-item-num">42</span>
+          <span class="stat-item-label">点赞数</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-item-num">18</span>
+          <span class="stat-item-label">评论数</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>👥 最近分享</h2>
+      <div class="share-history">
+        <div class="history-item">
+          <div class="history-avatar">李</div>
+          <div class="history-text">李军老师 查看了你的成果</div>
+          <div class="history-time">今天 09:30</div>
+        </div>
+        <div class="history-item">
+          <div class="history-avatar">王</div>
+          <div class="history-text">王丽红 妈妈 给你点赞了</div>
+          <div class="history-time">昨天 14:22</div>
+        </div>
+        <div class="history-item">
+          <div class="history-avatar">张</div>
+          <div class="history-text">张浩宇 给你的成果评论：加油！</div>
+          <div class="history-time">前天 18:15</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tips-box">
+        <h4>💡 分享建议</h4>
+        <ul>
+          <li>定期更新成果，让家长和老师了解你的学习进度</li>
+          <li>可设置分享权限，保护个人隐私信息</li>
+          <li>被分享的成果可积累，参与排名与奖励评比</li>
+          <li>邀请家长使用家长端查看详细学习报告</li>
+        </ul>
+      </div>
+    </div>
+
+    <a class="button" href="../training.html">← 返回学习页面</a>
+  </div>
+</body>
+</html>

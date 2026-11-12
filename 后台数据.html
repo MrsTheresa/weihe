@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实时监控 - 卫禾守护平台</title>
+  <script src="https://kit.fontawesome.com/a2f62b56a4.js" crossorigin="anonymous"></script>
+  <style>
+    /* 全局深色主题与原有保持一致 */
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1c1c1e;
+      --card-hover: #2a2a2c;
+      --text-main: #ffffff;
+      --text-sub: #8c8c8c;
+      --border-color: #333333;
+      --accent-blue: #3b82f6;
+      --success-color: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.2);
+      --badge-gray: #3a3a3c;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 40px;
+      overflow-y: scroll; /* 保持滚动条，防止页面抖动 */
+    }
+
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .page-title { font-size: 24px; font-weight: 600; }
+    
+    .back-btn {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: var(--card-hover); }
+
+    /* 数据表格样式 */
+    .table-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+
+    th { color: var(--text-sub); font-weight: normal; }
+    
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+
+    .ip-link {
+      color: var(--accent-blue);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .status-ok { color: var(--success-color); }
+
+    /* ================= 弹窗 (Modal) 样式 ================= */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background-color: #17181c;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 700px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+
+    /* 弹窗头部 */
+    .modal-header {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-title { font-size: 18px; font-weight: bold; }
+    
+    .modal-actions i {
+      color: var(--text-sub);
+      font-size: 16px;
+      margin-left: 16px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-actions i:hover { color: var(--text-main); }
+
+    /* 弹窗主体内容 */
+    .modal-body { padding: 24px; }
+
+    .info-block { margin-bottom: 24px; }
+    
+    .info-label {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .copy-icon { color: var(--text-sub); cursor: pointer; font-size: 12px; }
+    .copy-icon:hover { color: var(--text-main); }
+
+    /* 网格数据区 */
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    /* 徽章样式 */
+    .badge-status {
+      background-color: var(--success-bg);
+      color: var(--success-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-gray {
+      background-color: var(--badge-gray);
+      color: var(--text-sub);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .badge-link {
+      background-color: var(--badge-gray);
+      color: var(--text-main);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    /* 客户端IP & 地图区块 */
+    .client-section {
+      background-color: #1e1f23;
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .client-info { flex: 1; }
+    
+    .client-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .map-container {
+      width: 260px;
+      height: 120px;
+      background-color: #2a2b30;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      background-image: radial-gradient(circle at 50% 50%, #363840 2px, transparent 2px);
+      background-size: 12px 12px;
+    }
+
+    .map-pin {
+      position: absolute;
+      top: 45%;
+      right: 15%; /* 调整到大致中国东部/山东的位置 */
+      color: #ffffff;
+      font-size: 16px;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+    .map-pin::after {
+      content: '';
+      position: absolute;
+      width: 6px; height: 6px;
+      background: #ff9f00;
+      border-radius: 50%;
+      top: 6px; left: 3.5px;
+      box-shadow: 0 0 6px #ff9f00;
+    }
+
+    /* 用户代理 */
+    .user-agent { font-size: 13px; color: #d1d5db; word-break: break-all; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-section">
+      <h1 class="page-title">实时监控 日志</h1>
+      <a href="about.html" class="back-btn"><i class="fas fa-arrow-left"></i> 返回总览</a>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>请求ID</th>
+            <th>客户端IP (点击查看详情)</th>
+            <th>状态</th>
+            <th>位置</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2026/4/5 17:10:07</td>
+            <td>01KNEEG5N15...</td>
+            <td><span class="ip-link" onclick="openModal('119.164.22.10', 'CN 山东省 济南市', '2026/4/5', '下午5:10:07.26', '01KNEEG5N15XC1WKBSSZR25BE')">119.164.22.10</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 济南市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 17:08:22</td>
+            <td>01KNEEG2X99...</td>
+            <td><span class="ip-link" onclick="openModal('27.193.105.42', 'CN 山东省 青岛市', '2026/4/5', '下午5:08:22.11', '01KNEEG2X99PLM2KNBVCXZ88A')">27.193.105.42</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 青岛市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 16:55:10</td>
+            <td>01KNEEFTT41...</td>
+            <td><span class="ip-link" onclick="openModal('218.56.12.88', 'CN 山东省 烟台市', '2026/4/5', '下午4:55:10.05', '01KNEEFTT41LKJHGQWERTY55C')">218.56.12.88</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 烟台市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 16:42:05</td>
+            <td>01KNEEZXCV7...</td>
+            <td><span class="ip-link" onclick="openModal('112.238.55.12', 'CN 山东省 潍坊市', '2026/4/5', '下午4:42:05.88', '01KNEEZXCV7POIUYTREWQ99D')">112.238.55.12</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 潍坊市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 16:30:11</td>
+            <td>01KNEEQWE44...</td>
+            <td><span class="ip-link" onclick="openModal('60.213.88.91', 'CN 山东省 临沂市', '2026/4/5', '下午4:30:11.42', '01KNEEQWE44ASDFGHZXCVB11E')">60.213.88.91</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 临沂市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 16:15:44</td>
+            <td>01KNEEJHG77...</td>
+            <td><span class="ip-link" onclick="openModal('111.17.201.5', 'CN 山东省 淄博市', '2026/4/5', '下午4:15:44.19', '01KNEEJHG77MNBVCXZASDF22F')">111.17.201.5</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 淄博市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 15:58:20</td>
+            <td>01KNEEYTR33...</td>
+            <td><span class="ip-link" onclick="openModal('119.188.34.77', 'CN 山东省 济宁市', '2026/4/5', '下午3:58:20.91', '01KNEEYTR33POIUYTREWQQ33G')">119.188.34.77</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 济宁市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 15:45:02</td>
+            <td>01KNEEBNM22...</td>
+            <td><span class="ip-link" onclick="openModal('119.178.66.21', 'CN 山东省 泰安市', '2026/4/5', '下午3:45:02.34', '01KNEEBNM22LKJHGQWERTY44H')">119.178.66.21</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 泰安市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 15:30:33</td>
+            <td>01KNEEVBN99...</td>
+            <td><span class="ip-link" onclick="openModal('218.58.110.15', 'CN 山东省 威海市', '2026/4/5', '下午3:30:33.56', '01KNEEVBN99POIUYTREWQQ55I')">218.58.110.15</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 威海市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 15:12:18</td>
+            <td>01KNEECCC88...</td>
+            <td><span class="ip-link" onclick="openModal('119.184.92.8', 'CN 山东省 德州市', '2026/4/5', '下午3:12:18.77', '01KNEECCC88MNBVCXZASDF66J')">119.184.92.8</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 德州市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 14:55:40</td>
+            <td>01KNEEXXX11...</td>
+            <td><span class="ip-link" onclick="openModal('119.180.45.63', 'CN 山东省 聊城市', '2026/4/5', '下午2:55:40.12', '01KNEEXXX11LKJHGQWERTY77K')">119.180.45.63</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 聊城市</td>
+          </tr>
+          <tr>
+            <td>2026/4/5 14:40:15</td>
+            <td>01KNEEZZA66...</td>
+            <td><span class="ip-link" onclick="openModal('119.191.12.99', 'CN 山东省 菏泽市', '2026/4/5', '下午2:40:15.89', '01KNEEZZA66POIUYTREWQQ88L')">119.191.12.99</span></td>
+            <td class="status-ok">200 OK</td>
+            <td>CN 山东省 菏泽市</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="detailModal" onclick="closeModalOnBg(event)">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <div class="modal-title">请求详情</div>
+        <div class="modal-actions">
+          <i class="fas fa-link"></i>
+          <i class="fas fa-expand"></i>
+          <i class="fas fa-times" onclick="closeModal()"></i>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        
+        <div class="info-block" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="info-label">请求ID <i class="far fa-question-circle"></i></div>
+          <div class="info-value" style="font-family: monospace;" id="dynamic-reqId">01KNEEG5N15XC1WKBSSZR25BE <i class="far fa-copy copy-icon"></i></div>
+        </div>
+
+        <div class="info-block">
+          <div class="info-label">网址</div>
+          <div class="info-value">
+            <a href="https://flk.npc.gov.cn/" target="_blank" class="badge-link">去</a> 
+            https://flk.npc.gov.cn/
+            <i class="far fa-copy copy-icon"></i>
+          </div>
+        </div>
+
+        <div class="data-grid">
+          <div>
+            <div class="info-label">日期</div>
+            <div class="info-value" id="dynamic-date">2026/4/5</div>
+          </div>
+          <div>
+            <div class="info-label">时间</div>
+            <div class="info-value" id="dynamic-time">下午5:10:07.26</div>
+          </div>
+          <div>
+            <div class="info-label">状态代码</div>
+            <div class="info-value"><span class="badge-status">200</span> 好的</div>
+          </div>
+          <div>
+            <div class="info-label">持续时间</div>
+            <div class="info-value">1009毫秒</div>
+          </div>
+          <div>
+            <div class="info-label">响应大小</div>
+            <div class="info-value">1.4 KB</div>
+          </div>
+          <div>
+            <div class="info-label">内容类型</div>
+            <div class="info-value">文本/HTML</div>
+          </div>
+          <div>
+            <div class="info-label">原始元素 <i class="far fa-question-circle"></i></div>
+            <div class="info-value">-</div>
+          </div>
+          <div>
+            <div class="info-label">缓存状态</div>
+            <div class="info-value"><span class="badge-gray">Miss</span></div> 
+          </div>
+        </div>
+
+        <div class="client-section">
+          <div class="client-info">
+            <div class="info-label">客户端IP</div>
+            <div class="info-value"><span id="dynamic-ip">38.207.137.101</span> <i class="far fa-copy copy-icon"></i></div>
+            
+            <div class="client-grid">
+              <div>
+                <div class="info-label">乡村 / 城市</div> 
+                <div class="info-value" id="dynamic-country">CN 山东省 济南市</div>
+              </div>
+              <div>
+                <div class="info-label">地区</div>
+                <div class="info-value">华东</div>
+              </div>
+            </div>
+          </div>
+          <div class="map-container">
+            <i class="fas fa-map-marker-alt map-pin"></i>
+          </div>
+        </div>
+
+        <div class="info-block" style="margin-bottom: 0;">
+          <div class="info-label">用户代理 <span class="badge-gray" style="margin-left:6px;">浏览器</span></div>
+          <div class="user-agent">
+            Mozilla/5.0 (Windows NT 10.0;Win64;x64) AppleWebKit/537.36 (KHTML, 类似 Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('detailModal');
+    
+    // 升级版：动态替换 IP、地区、日期、时间、请求ID 等所有核心数据
+    function openModal(ip, country, date, time, reqId) {
+      document.getElementById('dynamic-ip').innerText = ip;
+      document.getElementById('dynamic-country').innerText = country;
+      document.getElementById('dynamic-date').innerText = date;
+      document.getElementById('dynamic-time').innerText = time;
+      document.getElementById('dynamic-reqId').innerHTML = reqId + ' <i class="far fa-copy copy-icon"></i>';
+      
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden'; // 防止背景滚动
+    }
+
+    // 关闭弹窗
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto'; // 恢复背景滚动
+    }
+
+    // 点击遮罩层关闭弹窗
+    function closeModalOnBg(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+  </script>
+</body>
+</html>

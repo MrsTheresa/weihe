@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>德育实践 - 卫禾守护平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a2f62b56a4.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --radius: 14px;
+      --primary-color: #5b7cfa;
+      --primary-light: #748ffd;
+      --bg: linear-gradient(135deg, #f6f7ff 0%, #f0f3ff 100%);
+    }
+    * {box-sizing: border-box;}
+    body {font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; color: #0e2f5f; min-height: 100vh; overflow-x: hidden;}
+    
+    header {background: linear-gradient(120deg, #5b7cfa, #748ffd); color: #fff; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(91, 124, 250, 0.3); opacity: 0; transform: translateY(-20px); animation: fadeInUp 0.6s ease-out 0.1s forwards;}
+    header h1 {margin: 0; font-size: 28px; font-weight: 700;}
+    header p {margin: 6px 0 0; font-size: 14px; opacity: 0.9;}
+    
+    .container {max-width: 960px; margin: 0 auto; padding: 30px 20px; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.3s forwards;}
+    
+    .intro-card {background: #fff; border-radius: var(--radius); padding: 24px; box-shadow: 0 8px 24px rgba(91, 124, 250, 0.15); margin-bottom: 24px; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.5s forwards;}
+    .intro-card h2 {margin: 0 0 12px; color: #5b7cfa; font-size: 20px;}
+    .intro-card p {margin: 6px 0; color: #556c8a; line-height: 1.6;}
+    
+    .task-content {background: #fff; border-radius: var(--radius); padding: 24px; box-shadow: 0 8px 24px rgba(91, 124, 250, 0.15); margin-bottom: 24px; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.7s forwards;}
+    .task-content h3 {color: #5b7cfa; margin-top: 18px; margin-bottom: 10px;}
+    .task-content h3:first-child {margin-top: 0;}
+    .task-content ul {margin: 8px 0 16px 20px; padding: 0; color: #556c8a; line-height: 1.8;}
+    .task-content li {margin: 6px 0;}
+    
+    .topic-card {background: linear-gradient(135deg, rgba(91, 124, 250, 0.08), rgba(116, 143, 253, 0.05)); border-radius: var(--radius); padding: 14px; margin: 10px 0; border-left: 4px solid #5b7cfa;}
+    
+    .progress-section {background: linear-gradient(135deg, rgba(91, 124, 250, 0.1), rgba(116, 143, 253, 0.08)); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; border: 1px solid rgba(91, 124, 250, 0.2); opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.9s forwards;}
+    .progress-label {display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #5b7cfa; font-weight: 600;}
+    .progress-bar {height: 10px; background: rgba(91, 124, 250, 0.2); border-radius: 999px; overflow: hidden;}
+    .progress-fill {height: 100%; background: linear-gradient(90deg, #5b7cfa, #748ffd); border-radius: 999px; width: 74%;}
+    
+    .stats-grid {display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 1.1s forwards;}
+    .stat-box {background: linear-gradient(135deg, #f6f7ff, #f0f3ff); border-radius: var(--radius); padding: 16px; text-align: center; border: 1px solid rgba(91, 124, 250, 0.2);}
+    .stat-num {font-size: 24px; font-weight: 700; color: #5b7cfa; display: block;}
+    .stat-label {font-size: 12px; color: #556c8a; margin-top: 6px;}
+    
+    .action-buttons {display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 1.3s forwards;}
+    .btn {padding: 12px 24px; border: none; border-radius: 999px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 14px;}
+    .btn-primary {background: linear-gradient(120deg, #5b7cfa, #748ffd); color: #fff; box-shadow: 0 8px 20px rgba(91, 124, 250, 0.3);}
+    .btn-primary:hover {transform: translateY(-2px); box-shadow: 0 12px 28px rgba(91, 124, 250, 0.4);}
+    .btn-secondary {background: #fff; color: #5b7cfa; border: 2px solid #5b7cfa;}
+    .btn-secondary:hover {background: #f6f7ff;}
+    
+    footer {text-align: center; padding: 20px; color: #99a8bf; font-size: 12px; margin-top: 30px; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 1.5s forwards;}
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeOutDown {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+    
+    .fade-out header,
+    .fade-out .container,
+    .fade-out .intro-card,
+    .fade-out .task-content,
+    .fade-out .progress-section,
+    .fade-out .stats-grid,
+    .fade-out .action-buttons,
+    .fade-out footer {
+      animation: fadeOutDown 0.5s ease-in forwards;
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {grid-template-columns: 1fr;}
+      .action-buttons {flex-direction: column;}
+      .btn {width: 100%;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎯 德育实践</h1>
+    <p>参与家务劳动实践，培养生活技能与家庭责任意识</p>
+  </header>
+
+  <div class="container">
+    <div class="intro-card">
+      <h2>任务介绍</h2>
+      <p>作为德育实践者，通过参与和分享家务劳动经验，学会基本生活技能，培养家庭责任意识。将自己的家务劳动实践转化为学习成果，在同学面前展示和分享，促进集体学习。</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <span class="stat-num">1</span>
+        <span class="stat-label">次讲演</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">74%</span>
+        <span class="stat-label">完成进度</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">10分钟</span>
+        <span class="stat-label">讲演时长</span>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-label"><span>当前进度</span><span>74%</span></div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+
+    <div class="task-content">
+      <h3>🧹 家务劳动主题（选择一个）</h3>
+      <div class="topic-card"><strong>主题1：厨房料理与食品安全</strong> - 分享简单烹饪技能、食材选购与厨房卫生知识</div>
+      <div class="topic-card"><strong>主题2：房间整理与卫生清洁</strong> - 介绍房间整理方法、清洁技巧与收纳小贴士</div>
+      <div class="topic-card"><strong>主题3：衣物洗护与日常整理</strong> - 讲解衣物分类洗涤、烫烧、折叠收纳经验</div>
+      <div class="topic-card"><strong>主题4：家庭日常维护与应急处理</strong> - 分享简单家务维修、垃圾分类与家庭小故障应对</div>
+
+      <h3>🎯 实践分享构成</h3>
+      <ul>
+        <li><strong>开场导入 (1-2分钟)：</strong> 讲述自己的家务经历、分享实践故事</li>
+        <li><strong>技能展示 (5-6分钟)：</strong> 演示具体家务技能、分享方法心得、讲解实践收获</li>
+        <li><strong>互动环节 (2分钟)：</strong> 接受提问、分享经验、邀请他人参与</li>
+        <li><strong>总结升华 (1分钟)：</strong> 回顾主要收获、呼吁大家参与家务劳动</li>
+      </ul>
+
+      <h3>🎁 完成奖励</h3>
+      <ul>
+        <li>获得"德育实践小卫士"荣誉</li>
+        <li>累计 25 分任务积分</li>
+        <li>实践分享视频证书与成果展示权限</li>
+        <li>加入"家务劳动小能手"计划与分享社群</li>
+      </ul>
+
+      <h3>💡 实践分享建议</h3>
+      <ul>
+        <li>提前准备讲稿或展示材料，展示一项您最拿手的家务技能</li>
+        <li>使用实际案例和个人收获，讲述真实的劳动经历与感悟</li>
+        <li>准备3-5个互动问题或小任务，邀请同学参与体验</li>
+        <li>分享表达清晰，语速适中，展现热情与自信</li>
+      </ul>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary"><i class="fas fa-home"></i> 提交实践申请</button>
+      <button class="btn btn-secondary">← 返回任务列表</button>
+    </div>
+  </div>
+
+  <footer>© 2026 卫禾守护平台 | 培养生活技能，共建美好家庭</footer>
+
+  <script>
+    function addFadeOut(callback) {
+      document.body.classList.add('fade-out');
+      setTimeout(callback, 500);
+    }
+
+    document.querySelector('.btn-primary').addEventListener('click', () => {
+      addFadeOut(() => {
+        alert('跳转到实践申请与成果展示页面');
+        // 如果有实际跳转，可以替换alert为 window.location.href = 'practice-application.html';
+      });
+    });
+    document.querySelector('.btn-secondary').addEventListener('click', () => {
+      addFadeOut(() => {
+        history.back();
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>荣誉榜 - 卫禾守护平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a2f62b56a4.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #f0f8ff;
+      --surface: #ffffff;
+      --text: #0e2f5f;
+      --primary: #145a9d;
+      --accent: #0b78da;
+      --border: #dceffe;
+      --radius: 14px;
+      --gold: #ffd700;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+    }
+    * {box-sizing: border-box;}
+    body {font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; margin: 0;}
+    .container {max-width: 920px; margin: auto;}
+    .card {background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(17, 75, 146, 0.12); padding: 24px; margin-bottom: 20px;}
+    h1, h2 {margin: 0; color: var(--primary);}
+    h1 {font-size: 28px; margin-bottom: 12px;}
+    h2 {font-size: 18px; margin-bottom: 14px;}
+    p {line-height: 1.65; margin: 8px 0;}
+    
+    .intro-text {color: #556c8a; font-size: 14px;}
+    
+    .rank-list {list-style: none; padding: 0; margin: 16px 0;}
+    .rank-item {display: flex; align-items: center; padding: 14px; background: #f8fcff; border-radius: var(--radius); border: 1px solid #e5f0ff; margin-bottom: 10px; gap: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;}
+    .rank-item:hover {transform: translateY(-2px); box-shadow: 0 12px 20px rgba(16, 93, 154, 0.15);}
+    
+    .rank-badge {width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #fff;}
+    .rank-badge.gold {background: linear-gradient(135deg, #ffd700, #ffed4e); color: #8b7500;}
+    .rank-badge.silver {background: linear-gradient(135deg, #c0c0c0, #e8e8e8); color: #606060;}
+    .rank-badge.bronze {background: linear-gradient(135deg, #cd7f32, #e8a652); color: #fff;}
+    .rank-badge.other {background: linear-gradient(135deg, #63c5ff, #2fa1ff); color: #fff;}
+    
+    .rank-info {flex: 1;}
+    .rank-name {font-weight: 700; color: #0e2f5f; margin-bottom: 2px;}
+    .rank-meta {font-size: 12px; color: #6b7a95;}
+    .rank-score {font-weight: 700; color: var(--accent); font-size: 16px;}
+    
+    .badge-group {display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 16px;}
+    .badge-item {display: flex; flex-direction: column; align-items: center; gap: 6px;}
+    .badge-icon {width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #ff9be7, #ff68ba); color: #fff; font-size: 22px; box-shadow: 0 6px 12px rgba(255, 152, 231, 0.3);}
+    .badge-icon.bronze {background: linear-gradient(135deg, #ffb175, #ff7152);}
+    .badge-icon.silver {background: linear-gradient(135deg, #98f8d7, #4ef6aa);}
+    .badge-icon.gold {background: linear-gradient(135deg, #ffd170, #ffb726);}
+    .badge-icon.law {background: linear-gradient(135deg, #a6c6ff, #6b92ff);}
+    .badge-icon.shield {background: linear-gradient(135deg, #7be0ff, #54a3ff);}
+    .badge-name {font-size: 11px; color: #556c8a; text-align: center; line-height: 1.3;}
+    
+    .stats-grid {display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px;}
+    .stat-box {background: linear-gradient(135deg, rgba(18, 136, 255, 0.08), rgba(0, 198, 178, 0.05)); border-radius: var(--radius); border: 1px solid #cce1ff; padding: 12px; text-align: center;}
+    .stat-value {font-size: 20px; font-weight: 700; color: var(--accent); display: block;}
+    .stat-label {font-size: 12px; color: #556c8a; margin-top: 4px;}
+    
+    .reward-box {background: linear-gradient(120deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05)); border-radius: var(--radius); border: 2px solid #ffed4e; padding: 14px; margin-top: 14px;}
+    .reward-box h3 {margin: 0 0 8px; color: #8b7500; font-size: 14px;}
+    .reward-list {list-style: none; padding: 0; margin: 0;}
+    .reward-list li {padding: 6px 0; font-size: 13px; color: #556c8a; display: flex; align-items: center; gap: 8px;}
+    .reward-list li::before {content: "✓"; color: #ffd700; font-weight: 700;}
+    
+    .button {display: inline-block; margin-top: 20px; color: #fff; background: linear-gradient(90deg, #1981e8, #238cd2); border: none; border-radius: 999px; padding: 10px 20px; text-decoration: none; font-weight: 600; cursor: pointer; transition: transform 0.2s ease;}
+    .button:hover {transform: translateY(-2px);}
+    
+    @media (max-width: 760px) {
+      body {padding: 24px 16px;}
+      .stats-grid {grid-template-columns: 1fr;}
+      .badge-group {grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));}
+      .rank-item {flex-wrap: wrap;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>🏆 荣誉榜</h1>
+      <p class="intro-text">查看当前平台优秀学习者排名与奖励资格，了解自己距离下一个荣誉目标还有多远。</p>
+      <p class="intro-text">建议：持续完成每周任务与测评，可获得更多徽章与线下活动资格。</p>
+      
+      <div class="stats-grid">
+        <div class="stat-box"><span class="stat-value">1,847</span><span class="stat-label">平台总学者</span></div>
+        <div class="stat-box"><span class="stat-value">156</span><span class="stat-label">有效排名者</span></div>
+        <div class="stat-box"><span class="stat-value">89%</span><span class="stat-label">完成率</span></div>
+        <div class="stat-box"><span class="stat-value">42</span><span class="stat-label">活跃城市</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📊 本周排名 Top 5</h2>
+      <ul class="rank-list">
+        <li class="rank-item">
+          <div class="rank-badge gold">🥇</div>
+          <div class="rank-info">
+            <div class="rank-name">李明昊</div>
+            <div class="rank-meta">初三 · 北京 · 法治达人</div>
+          </div>
+          <div class="rank-score">2,840分</div>
+        </li>
+        <li class="rank-item">
+          <div class="rank-badge silver">🥈</div>
+          <div class="rank-info">
+            <div class="rank-name">王思琪</div>
+            <div class="rank-meta">初二 · 上海 · 安全卫士</div>
+          </div>
+          <div class="rank-score">2,650分</div>
+        </li>
+        <li class="rank-item">
+          <div class="rank-badge bronze">🥉</div>
+          <div class="rank-info">
+            <div class="rank-name">张浩宇</div>
+            <div class="rank-meta">初一 · 深圳 · 法律学徒</div>
+          </div>
+          <div class="rank-score">2,430分</div>
+        </li>
+        <li class="rank-item">
+          <div class="rank-badge other">4</div>
+          <div class="rank-info">
+            <div class="rank-name">刘欣悦</div>
+            <div class="rank-meta">高一 · 杭州 · 权益卫士</div>
+          </div>
+          <div class="rank-score">2,210分</div>
+        </li>
+        <li class="rank-item">
+          <div class="rank-badge other">5</div>
+          <div class="rank-info">
+            <div class="rank-name">陈昊天</div>
+            <div class="rank-meta">初三 · 南京 · 防护专家</div>
+          </div>
+          <div class="rank-score">2,085分</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>🎖️ 荣誉徽章体系</h2>
+      <p class="intro-text">集全部徽章后可申请线下活动资格与证书认证。</p>
+      <div class="badge-group">
+        <div class="badge-item">
+          <div class="badge-icon gold"><i class="fas fa-star"></i></div>
+          <div class="badge-name">法治之光</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon silver"><i class="fas fa-shield-alt"></i></div>
+          <div class="badge-name">防护卫士</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon bronze"><i class="fas fa-certificate"></i></div>
+          <div class="badge-name">成长见证</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon law"><i class="fas fa-balance-scale"></i></div>
+          <div class="badge-name">权益卫者</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon shield"><i class="fas fa-hands-helping"></i></div>
+          <div class="badge-name">社区贡献</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon gold"><i class="fas fa-fire"></i></div>
+          <div class="badge-name">连续打卡</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎁 当前可参加活动</h2>
+      <div class="reward-box">
+        <h3>✨ 你已获得参赛资格</h3>
+        <ul class="reward-list">
+          <li>全国青少年法治知识竞赛（5月）</li>
+          <li>线下安全教育训练营（暑期）</li>
+          <li>学习成果证书认证</li>
+          <li>优秀学员推荐资格</li>
+          <li>平台内积分兑换权限</li>
+        </ul>
+      </div>
+    </div>
+
+    <a class="button" href="../training.html">← 返回学习页面</a>
+  </div>
+</body>
+</html>

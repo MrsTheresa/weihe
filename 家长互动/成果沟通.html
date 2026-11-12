@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>成果沟通 - 卫禾守护平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a2f62b56a4.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --radius: 14px;
+      --primary-color: #00c6b2;
+      --primary-light: #00e8d3;
+      --primary-dark: #009b8a;
+      --accent-warm: #f39c12;
+      --accent-light: #fff3cd;
+      --bg: linear-gradient(135deg, #f0fef9 0%, #e8fdf6 100%);
+      --shadow-sm: 0 4px 12px rgba(0, 198, 178, 0.08);
+      --shadow-md: 0 8px 24px rgba(0, 198, 178, 0.12);
+      --shadow-lg: 0 12px 32px rgba(0, 198, 178, 0.15);
+    }
+    * {box-sizing: border-box;}
+    body {font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; color: #1a3a3a; min-height: 100vh; overflow-x: hidden;}
+    
+    header {background: linear-gradient(135deg, #00c6b2 0%, #00e8d3 100%); color: #fff; padding: 32px 20px; text-align: center; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;}
+    header::before {content: ''; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: rgba(243, 156, 18, 0.1); border-radius: 50%; pointer-events: none;}
+    header h1 {margin: 0; font-size: 32px; font-weight: 700; position: relative; z-index: 1;}
+    header p {margin: 8px 0 0; font-size: 15px; opacity: 0.95; position: relative; z-index: 1;}
+    
+    .container {max-width: 1000px; margin: 0 auto; padding: 40px 20px; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.3s forwards;}
+    
+    .intro-card {
+      background: #fff; border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-md); margin-bottom: 28px;
+      opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.5s forwards;
+      border-left: 5px solid var(--primary-color);
+      position: relative;
+    }
+    .intro-card::after {content: ''; position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: radial-gradient(circle, rgba(0, 198, 178, 0.05), transparent); border-radius: 0 var(--radius) 0 0;}
+    .intro-card h2 {margin: 0 0 14px; color: var(--primary-color); font-size: 22px; font-weight: 600;}
+    .intro-card p {margin: 6px 0; color: #556c8a; line-height: 1.7; font-size: 15px;}
+    
+    .task-content {
+      background: #fff; border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-md); margin-bottom: 28px;
+      opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.7s forwards;
+    }
+    .task-content h3 {color: var(--primary-dark); margin-top: 20px; margin-bottom: 14px; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+    .task-content h3:first-child {margin-top: 0;}
+    .task-content h3::before {content: ''; display: inline-block; width: 4px; height: 20px; background: var(--primary-color); border-radius: 999px;}
+    .task-content ul {margin: 12px 0 18px 20px; padding: 0; color: #556c8a; line-height: 1.9;}
+    .task-content li {margin: 8px 0; font-size: 15px;}
+    .task-content li strong {color: var(--primary-color);}
+    
+    .achievement-card {
+      background: linear-gradient(135deg, rgba(0, 198, 178, 0.05), rgba(0, 232, 211, 0.03)); border-radius: 12px; padding: 16px; margin: 12px 0;
+      border: 1.5px solid rgba(0, 198, 178, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .achievement-card:hover {
+      background: linear-gradient(135deg, rgba(0, 198, 178, 0.1), rgba(0, 232, 211, 0.08));
+      transform: translateX(4px);
+      box-shadow: var(--shadow-sm);
+      border-color: rgba(0, 198, 178, 0.4);
+    }
+    .achievement-card strong {color: var(--primary-color); font-size: 15px;}
+    
+    .progress-section {
+      background: linear-gradient(135deg, rgba(0, 198, 178, 0.08), rgba(0, 232, 211, 0.05)); border-radius: var(--radius); padding: 24px; margin-bottom: 28px;
+      border: 1.5px solid rgba(0, 198, 178, 0.15);
+      opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 0.9s forwards;
+    }
+    .progress-label {display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--primary-color); font-weight: 600;}
+    .progress-bar {height: 12px; background: rgba(0, 198, 178, 0.15); border-radius: 999px; overflow: hidden; box-shadow: inset var(--shadow-sm);}
+    .progress-fill {height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); border-radius: 999px; width: 90%; transition: width 0.4s ease;}
+    
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px;
+      opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 1.1s forwards;
+    }
+    .stat-box {
+      background: linear-gradient(135deg, #fff 0%, rgba(0, 198, 178, 0.02) 100%); border-radius: var(--radius); padding: 20px; text-align: center;
+      box-shadow: var(--shadow-sm); border: 1.5px solid rgba(0, 198, 178, 0.1);
+      transition: all 0.3s ease;
+    }
+    .stat-box:hover {transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(0, 198, 178, 0.25);}
+    .stat-num {font-size: 28px; font-weight: 700; color: var(--primary-color); display: block;}
+    .stat-label {font-size: 13px; color: #556c8a; margin-top: 8px; font-weight: 500;}
+    
+    .action-buttons {
+      display: flex; gap: 14px; justify-content: center; margin-top: 32px; flex-wrap: wrap;
+      opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 1.3s forwards;
+    }
+    .btn {padding: 14px 32px; border: none; border-radius: 999px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 15px;}
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: #fff; box-shadow: var(--shadow-md);
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::before {content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); transition: left 0.4s ease;}
+    .btn-primary:hover {
+      transform: translateY(-2px); box-shadow: var(--shadow-lg);
+    }
+    .btn-primary:hover::before {left: 100%;}
+    .btn-secondary {background: #fff; color: var(--primary-color); border: 2px solid var(--primary-color); font-weight: 600;}
+    .btn-secondary:hover {background: rgba(0, 198, 178, 0.05); transform: translateY(-2px); box-shadow: var(--shadow-md);}
+    
+    footer {
+      text-align: center; padding: 24px; color: #99a8bf; font-size: 13px; margin-top: 40px; background: rgba(0, 198, 178, 0.03);
+      opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s ease-out 1.5s forwards;
+      border-top: 1px solid rgba(0, 198, 178, 0.1);
+    }
+    
+    @keyframes fadeInUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {grid-template-columns: 1fr;}
+      .action-buttons {flex-direction: column;}
+      .btn {width: 100%;}
+      header h1 {font-size: 26px;}
+      .task-content {padding: 20px;}
+      .intro-card {padding: 20px;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📊 成果沟通</h1>
+    <p>分享学习成果，让家长了解孩子的学习进展</p>
+  </header>
+
+  <div class="container">
+    <div class="intro-card">
+      <h2>沟通介绍</h2>
+      <p>通过图表、数据和分享，将青少年的学习成果、进度和进展情况实时传达给家长。让家长全面了解孩子的学习状态、掌握情况和成长历程，建立有效的家校沟通。</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <span class="stat-num">12</span>
+        <span class="stat-label">本月分享数</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">90%</span>
+        <span class="stat-label">完成进度</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">5</span>
+        <span class="stat-label">家长反馈数</span>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-label"><span>本月成果分享进度</span><span>90%</span></div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+
+    <div class="task-content">
+      <h3>📈 分享类别</h3>
+      <div class="achievement-card"><strong>学习进度统计</strong> - 各科学习完成度、掌握情况、成绩进展</div>
+      <div class="achievement-card"><strong>能力发展报告</strong> - 法治思维、问题解决能力、创新意识提升</div>
+      <div class="achievement-card"><strong>月度总结分享</strong> - 本月学习重点、收获感悟、下月规划</div>
+      <div class="achievement-card"><strong>活动参与展示</strong> - 参加活动照片、成果视频、获奖情况</div>
+
+      <h3>💬 沟通阶段</h3>
+      <ul>
+        <li><strong>第一周：</strong>完成本月学习总结，汇总学科成绩和能力评估</li>
+        <li><strong>第二周：</strong>制作成果分享内容，包括图表、文字和视频素材</li>
+        <li><strong>第三周：</strong>向家长分享成果，收集家长的意见和建议</li>
+        <li><strong>第四周：</strong>根据反馈制定改进计划，为下月学习设定目标</li>
+      </ul>
+
+      <h3>🎁 分享奖励</h3>
+      <ul>
+        <li>分享完成后获得"成果分享小卫士"荣誉</li>
+        <li>累计 40 分任务积分与成长值</li>
+        <li>每月成功分享后可获得家长点赞和鼓励反馈</li>
+        <li>年度分享总结表现优异可入选"优秀沟通奖"</li>
+      </ul>
+
+      <h3>💡 分享建议</h3>
+      <ul>
+        <li>选择最能代表本月成长的成果进行分享，言语真诚自然</li>
+        <li>结合数据和具体案例，让分享内容更加生动有说服力</li>
+        <li>主动邀请家长提出意见建议，建立双向互动沟通</li>
+        <li>设定清晰的下月目标，展示持续进步的决心和规划</li>
+      </ul>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary"><i class="fas fa-share"></i> 分享成果</button>
+      <button class="btn btn-secondary">← 返回</button>
+    </div>
+  </div>
+
+  <footer>© 2026 卫禾守护平台 | 家校沟通，见证成长</footer>
+
+  <script>
+    function addFadeOut(callback) {
+      document.body.classList.add('fade-out');
+      setTimeout(callback, 500);
+    }
+
+    document.querySelector('.btn-primary').addEventListener('click', () => {
+      addFadeOut(() => {
+        alert('跳转到成果分享页面');
+      });
+    });
+    
+    document.querySelector('.btn-secondary').addEventListener('click', () => {
+      addFadeOut(() => {
+        history.back();
+      });
+    });
+  </script>
+</body>
+</html>

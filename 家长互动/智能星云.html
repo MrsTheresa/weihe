@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>青少年法治信息系统 - 智慧监测平台</title>
+    <style>
+        :root {
+            --bg-color: #02060a;
+            --accent-color: #00e5ff; 
+            --law-blue: #0077ff;   
+            --text-color: #e0f7fa;
+            --glass-bg: rgba(0, 20, 40, 0.5);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: var(--bg-color);
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text-color);
+        }
+
+        body::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: 0; pointer-events: none;
+        }
+
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .main-layout { position: relative; z-index: 10; display: flex; width: 100%; height: 100vh; pointer-events: none; }
+        .left-zone { flex: 1.2; display: flex; flex-direction: column; justify-content: flex-end; padding: 60px; }
+        .system-title { pointer-events: auto; }
+        .system-title h1 { font-size: 2.5rem; margin: 0; letter-spacing: 4px; text-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
+        .system-title .tag { display: inline-block; padding: 4px 12px; background: var(--law-blue); font-size: 0.8rem; margin-top: 10px; border-radius: 4px; }
+
+        .right-panel { flex: 1; padding: 30px; display: flex; flex-direction: column; gap: 18px; pointer-events: auto; background: linear-gradient(90deg, rgba(0, 12, 25, 0.45), rgba(0, 10, 20, 0.85)); backdrop-filter: blur(6px); border-left: 1px solid rgba(0, 229, 255, 0.15); }
+        .data-card { background: linear-gradient(135deg, rgba(1, 18, 36, 0.82), rgba(5, 28, 50, 0.58)); border: 1px solid rgba(0, 229, 255, 0.25); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 12px; position: relative; overflow: hidden; }
+        .data-card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #00e5ff, #00a5ff); border-radius: 0 8px 8px 0; }
+        .card-header { font-size: 0.92rem; color: #8bf0ff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 229, 255, 0.2); padding-bottom: 8px; letter-spacing: 0.02em; }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat-item .value { font-size: 1.8rem; font-family: monospace; color: #fff; }
+        .stat-item .label { font-size: 0.75rem; opacity: 0.6; }
+
+        .log-container { font-size: 0.8rem; line-height: 1.8; height: 150px; overflow: hidden; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); }
+        .log-item { color: #aaa; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+        .log-item span { color: var(--accent-color); margin-right: 10px; }
+
+        .info-popup { position: fixed; z-index: 100; background: var(--glass-bg); border: 1px solid rgba(0, 229, 255, 0.4); padding: 15px; border-radius: 8px; width: 220px; pointer-events: none; font-size: 0.8rem; backdrop-filter: blur(8px); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .popup-header { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(0, 229, 255, 0.2); padding-bottom: 8px; margin-bottom: 10px; }
+        #crime-alert-card {
+            animation: glow-warning 2.5s ease-in-out infinite;
+        }
+        @keyframes glow-warning {
+            0%, 100% { box-shadow: 0 0 0 rgba(255, 165, 0, 0); }
+            50% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.45); }
+        }
+        .user-id { color: var(--accent-color); font-family: monospace; }
+        .status-tag { padding: 2px 6px; border-radius: 20px; font-size: 0.7rem; background: rgba(0, 255, 0, 0.2); color: #00ff00; }
+        .info-item { margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .info-item label { color: #aaa; }
+        .info-value { color: #fff; font-weight: bold; }
+        .info-value.safe { color: #00ff00; }
+        /* Page transition styles */
+        .page-container { position: relative; z-index: 10; pointer-events: auto; }
+        .page-child { will-change: opacity, transform; }
+        .page-container.is-exiting { opacity: 0; pointer-events: none; transition: opacity 320ms ease; }
+
+        /* Reveal helpers: use class-driven staged reveal */
+            .reveal-init { opacity: 0; transform: translateY(18px); transition: opacity 260ms cubic-bezier(.2,.8,.2,1), transform 260ms cubic-bezier(.2,.8,.2,1); will-change: opacity, transform; }
+        .reveal-show { opacity: 1; transform: translateY(0); }
+        @media (prefers-reduced-motion: reduce) { .reveal-init { transition: none; transform: none; opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"><canvas id="particleCanvas"></canvas></div>
+
+    <div id="infoBox" class="info-popup" style="display: none;">
+        <div class="popup-header">
+            <span class="user-id">U_001249</span>
+            <span class="status-tag">数据已锁定</span>
+        </div>
+        <div class="popup-content"></div>
+    </div>
+    <main id="page-container" class="page-container" role="main">
+        <div class="main-layout page-child">
+        <div class="left-zone">
+            <div class="system-title">
+                <div class="tag">GOVERNMENT SECURITY</div>
+                <h1>青少年法治<br>大数据监测平台</h1>
+                <p style="opacity: 0.5;">Smart Youth Rule of Law Information Matrix</p>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="data-card">
+                <div class="card-header"><span>实时概览</span><span>LEVEL 01</span></div>
+                <div class="stat-grid">
+                    <div class="stat-item"><div class="label">普法覆盖率</div><div class="value">98.4%</div></div>
+                    <div class="stat-item"><div class="label">活跃监测节点</div><div class="value">12,408</div></div>
+                </div>
+            </div>
+            <div class="data-card">
+                <div class="card-header"><span>监测日志</span></div>
+                <div class="log-container" id="logBox"></div>
+            </div>
+            <div class="data-card" style="border-color: rgba(255, 50, 50, 0.3);">
+                <div class="card-header" style="color: #ff5252;"><span>风险预警</span></div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; border: 2px solid #ff5252; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ff5252; animation: pulse 2s infinite;">!</div>
+                    <div>
+                        <div style="font-size: 0.9rem;">未成年人网络安全防御系统已启动</div>
+                        <div style="font-size: 0.7rem; opacity: 0.6;">拦截非法访问: 1,293 次/24h</div>
+                    </div>
+                </div>
+            </div>
+            <div class="data-card" id="crime-alert-card" style="border-color: rgba(255, 165, 0, 0.4);">
+                <div class="card-header" style="color: #ffd54f;"><span>青少年犯罪预警系统</span><span id="crimeAlertLevel">等级：A</span></div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="font-size: 0.9rem;">当前预警态势：<strong id="crimeAlertStatus">稳定</strong></div>
+                    <div style="background: rgba(255, 255, 255, 0.12); border-radius: 10px; height: 10px; overflow: hidden;">
+                        <div id="crimeAlertBar" style="width: 18%; height: 100%; background: linear-gradient(90deg, #ffb300, #ff5722);"></div>
+                    </div>
+                    <div style="font-size: 0.75rem; opacity: 0.7;">实时事件监测：少年违反校园规则、校园欺凌、网络极端言论等</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; opacity: 0.8;">
+                        <span>近1h事件数：</span><span id="crimeAlertCount">3</span>
+                        <span>累计预警：</span><span id="crimeAlertTotal">18</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [], largeOrbiters = [];
+        const particleCount = 800, sphereRadius = 300; 
+        const returnSpeed = 0.05;
+        
+        // 中心点控制变量
+        const centerXRatio = 0.28; 
+        // 定义中心点的 Y 轴比例，0.42 比原本的 0.5 更靠上
+        const centerYRatio = 0.42; 
+        
+        let infoBox, infoDataPool, lockedOrbiter = null, logInterval = null; 
+        let mouse = { x: -1000, y: -1000 };
+        let particlesEntranceActive = false, entranceStartTime = 0, entranceDuration = 1400;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+        class Particle {
+            constructor(id) {
+                this.id = id;
+                const phi = Math.acos(-1 + (2 * id) / particleCount);
+                const theta = Math.sqrt(particleCount * Math.PI) * phi;
+                this.ox = sphereRadius * Math.sin(phi) * Math.cos(theta);
+                this.oy = sphereRadius * Math.sin(phi) * Math.sin(theta);
+                this.oz = sphereRadius * Math.cos(phi);
+                
+                // 最终位置
+                this.targetX = (window.innerWidth * centerXRatio) + this.ox;
+                this.targetY = (window.innerHeight * centerYRatio) + this.oy;
+                
+                // 声明初始位置（投掷屋外）
+                this.px = this.targetX;
+                this.py = this.targetY;
+                this.vx = 0; this.vy = 0;
+                this.size = 1.5 + Math.random() * 2.0;
+                this.entranceStartX = 0;
+                this.entranceStartY = 0;
+                this.entranceProgress = 0;
+                this.resetEntrancePosition();
+            }
+            
+            resetEntrancePosition() {
+                // 从屋外随机位置传入
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.max(window.innerWidth, window.innerHeight) * 0.7;
+                const centerX = window.innerWidth * centerXRatio;
+                const centerY = window.innerHeight * centerYRatio;
+                this.entranceStartX = centerX + Math.cos(angle) * dist;
+                this.entranceStartY = centerY + Math.sin(angle) * dist;
+            }
+
+            update() {
+                // 处理入场动画
+                if (particlesEntranceActive) {
+                    const elapsed = Date.now() - entranceStartTime;
+                    this.entranceProgress = Math.min(elapsed / entranceDuration, 1);
+                    
+                    // easeOutCubic 缓动
+                    const easeProgress = 1 - Math.pow(1 - this.entranceProgress, 3);
+                    this.px = this.entranceStartX + (this.targetX - this.entranceStartX) * easeProgress;
+                    this.py = this.entranceStartY + (this.targetY - this.entranceStartY) * easeProgress;
+                    
+                    if (this.entranceProgress >= 1) {
+                        this.px = this.targetX;
+                        this.py = this.targetY;
+                    }
+                }
+                
+                const speed = 0.002;
+                const cosY = Math.cos(speed), sinY = Math.sin(speed);
+                let tx = this.ox * cosY - this.oz * sinY;
+                let tz = this.ox * sinY + this.oz * cosY;
+                this.ox = tx; this.oz = tz;
+
+                const targetX = canvas.width * centerXRatio + this.ox;
+                // 使用 centerYRatio 上移回位目标
+                const targetY = canvas.height * centerYRatio + this.oy;
+
+                const dx = mouse.x - this.px, dy = mouse.y - this.py;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const escapeRadius = 80; 
+
+                if (distance < escapeRadius) {
+                    const force = (escapeRadius - distance) / escapeRadius;
+                    const angle = Math.atan2(dy, dx);
+                    this.vx -= Math.cos(angle) * force * 2.0;
+                    this.vy -= Math.sin(angle) * force * 2.0;
+                }
+
+                // 入场中不应用速度变化
+                if (!particlesEntranceActive || this.entranceProgress >= 1) {
+                    this.vx += (targetX - this.px) * returnSpeed;
+                    this.vy += (targetY - this.py) * returnSpeed;
+                    this.vx *= 0.85; this.vy *= 0.85;
+                    this.px += this.vx; this.py += this.vy;
+                }
+                
+                this.alpha = (this.oz + sphereRadius) / (sphereRadius * 2) + 0.1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.px, this.py, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 229, 255, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        class LargeOrbiter {
+            constructor(index) {
+                this.index = index;
+                this.orbitRadius = sphereRadius + 100;
+                this.orbitOffset = Math.random() * Math.PI * 2;
+                this.oz = Math.random() * 50 - 25;
+                
+                // 最终位置
+                this.targetX = (window.innerWidth * centerXRatio);
+                this.targetY = (window.innerHeight * centerYRatio);
+                
+                // 声明初始位置（投掷屋外）
+                this.px = this.targetX;
+                this.py = this.targetY;
+                this.vx = 0; this.vy = 0;
+                this.baseSize = 5;
+                this.isCaptured = false;
+                this.captureDistance = 45; 
+                this.data = null;
+                
+                // 拖影数组配置
+                this.history = [];
+                this.maxHistory = 16;
+                
+                // 入场动画配置
+                this.entranceStartX = 0;
+                this.entranceStartY = 0;
+                this.entranceProgress = 0;
+                this.resetEntrancePosition();
+            }
+            
+            resetEntrancePosition() {
+                // 从屋外随机位置传入
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.max(window.innerWidth, window.innerHeight) * 0.5;
+                this.entranceStartX = this.targetX + Math.cos(angle) * dist;
+                this.entranceStartY = this.targetY + Math.sin(angle) * dist;
+            }
+
+            update() {
+                // 处理入场动画（汇聚）
+                if (particlesEntranceActive) {
+                    const elapsed = Date.now() - entranceStartTime;
+                    this.entranceProgress = Math.min(elapsed / entranceDuration, 1);
+                    
+                    // easeOutCubic 缓动
+                    const easeProgress = 1 - Math.pow(1 - this.entranceProgress, 3);
+                    this.px = this.entranceStartX + (this.targetX - this.entranceStartX) * easeProgress;
+                    this.py = this.entranceStartY + (this.targetY - this.entranceStartY) * easeProgress;
+                    
+                    if (this.entranceProgress >= 1) {
+                        this.px = this.targetX;
+                        this.py = this.targetY;
+                    }
+                }
+                
+                const time = Date.now() * 0.0001;
+                const currentAngle = this.orbitOffset + time;
+                const targetOrbitX = (canvas.width * centerXRatio) + this.orbitRadius * Math.sin(currentAngle);
+                // 使用 centerYRatio 上移大粒子运动轨道
+                const targetOrbitY = (canvas.height * centerYRatio) + this.orbitRadius * Math.cos(currentAngle) * 0.3;
+
+                const dx = mouse.x - this.px, dy = mouse.y - this.py;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < this.captureDistance && (lockedOrbiter === null || lockedOrbiter === this)) {
+                    if (!this.isCaptured) {
+                        this.isCaptured = true;
+                        lockedOrbiter = this;
+                        this.generateData();
+                    }
+                    this.px += (mouse.x - this.px) * 0.04;
+                    this.py += (mouse.y - this.py) * 0.04;
+                    this.vx = 0; this.vy = 0;
+                } else {
+                    if (this.isCaptured) {
+                        this.isCaptured = false;
+                        if (lockedOrbiter === this) lockedOrbiter = null;
+                    }
+                    
+                    // 入场中不应用力学
+                    if (!particlesEntranceActive || this.entranceProgress >= 1) {
+                        const recoveryForce = 0.02;
+                        this.vx += (targetOrbitX - this.px) * recoveryForce;
+                        this.vy += (targetOrbitY - this.py) * recoveryForce;
+                        this.vx *= 0.85; 
+                        this.vy *= 0.85;
+                        
+                        this.px += this.vx;
+                        this.py += this.vy;
+                    }
+                }
+                this.alpha = (this.oz + 50) / 100 + 0.4;
+
+                // 记录历史轨迹产生拖影
+                this.history.push({x: this.px, y: this.py});
+                if (this.history.length > this.maxHistory) {
+                    this.history.shift();
+                }
+            }
+
+            draw() {
+                // 1. 绘制短拖影
+                for (let i = 0; i < this.history.length; i++) {
+                    const pos = this.history[i];
+                    // 越早的历史点越小越透明
+                    const ratio = i / this.history.length;
+                    const trailAlpha = ratio * this.alpha * 0.6;
+                    const trailSize = this.baseSize * ratio;
+                    
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, trailSize, 0, Math.PI * 2);
+                    // 拖影颜色改为冰白色
+                    ctx.fillStyle = `rgba(240, 255, 255, ${trailAlpha})`
+                    ctx.fill();
+                }
+
+                // 2. 绘制本体
+                ctx.beginPath();
+                ctx.arc(this.px, this.py, this.baseSize, 0, Math.PI * 2);
+                // 颜色改为冰白色 (240, 255, 255)
+                ctx.fillStyle = `rgba(240, 255, 255, ${this.isCaptured ? 1 : this.alpha})`;
+                ctx.shadowBlur = this.isCaptured ? 15 : 5; // 默认给点泛光，选中时更亮
+                ctx.shadowColor = '#F0FFFF';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            generateData() {
+                const names = ["刘*宇", "张*涵", "王*明", "李*萱", "陈*豪"];
+                this.data = {
+                    id: "U_00" + (1240 + this.index),
+                    name: names[this.index % 5],
+                    age: 15 + Math.floor(Math.random() * 3),
+                    score: Math.floor(100 + Math.random() * 40) + "/150"
+                };
+            }
+        }
+
+        function init() {
+            resize();
+            infoBox = document.getElementById('infoBox');
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle(i));
+            for (let i = 0; i < 12; i++) largeOrbiters.push(new LargeOrbiter(i));
+            createLogs();
+            animate();
+        }
+
+        function createLogs() {
+            const logBox = document.getElementById('logBox');
+            const logData = ["普法云课堂在线人数+1", "监测节点正常", "拦截异常请求", "数据库同步完成"];
+            if (logInterval) clearInterval(logInterval);
+            logInterval = setInterval(() => {
+                const div = document.createElement('div');
+                div.className = 'log-item';
+                div.innerHTML = `<span>[${new Date().toLocaleTimeString()}]</span> ${logData[Math.floor(Math.random()*logData.length)]}`;
+                logBox.prepend(div);
+                if (logBox.children.length > 8) logBox.lastChild.remove();
+            }, 3000);
+        }
+
+        function stopLogs() {
+            if (logInterval) {
+                clearInterval(logInterval);
+                logInterval = null;
+            }
+        }
+
+        function updateCrimeAlert() {
+            const levels = [
+                {label: 'A', status: '稳定', rate: 0.18},
+                {label: 'B', status: '关注', rate: 0.38},
+                {label: 'C', status: '警戒', rate: 0.62},
+                {label: 'D', status: '高危', rate: 0.82},
+                {label: 'E', status: '严重', rate: 0.96}
+            ];
+            const index = Math.floor(Math.random() * levels.length);
+            const level = levels[index];
+            document.getElementById('crimeAlertLevel').textContent = `等级：${level.label}`;
+            document.getElementById('crimeAlertStatus').textContent = level.status;
+            document.getElementById('crimeAlertBar').style.width = `${Math.round(level.rate * 100)}%`;
+
+            const count = 3 + Math.floor(Math.random() * 6);
+            document.getElementById('crimeAlertCount').textContent = count;
+            document.getElementById('crimeAlertTotal').textContent = 10 + Math.floor(Math.random() * 20);
+        }
+
+        setInterval(updateCrimeAlert, 6500);
+        updateCrimeAlert();
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 6, 10, 0.35)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.sort((a, b) => a.oz - b.oz);
+            particles.forEach(p => { p.update(); p.draw(); });
+            largeOrbiters.forEach(o => { o.update(); o.draw(); });
+
+            if (lockedOrbiter) {
+                infoBox.style.display = 'block';
+                infoBox.style.left = (mouse.x + 15) + 'px';
+                infoBox.style.top = (mouse.y + 15) + 'px';
+                const d = lockedOrbiter.data;
+                infoBox.querySelector('.user-id').textContent = d.id;
+                infoBox.querySelector('.popup-content').innerHTML = `
+                    <div class="info-item"><label>姓名:</label><span class="info-value">${d.name}</span></div>
+                    <div class="info-item"><label>年龄:</label><span class="info-value">${d.age}</span></div>
+                    <div class="info-item"><label>学分:</label><span class="info-value">${d.score}</span></div>
+                `;
+            } else {
+                infoBox.style.display = 'none';
+            }
+            requestAnimationFrame(animate);
+        }
+
+        init();
+
+        /* ------------------------
+           PJAX-like 页面切换与入/退场动画
+           ------------------------ */
+        const pageContainer = document.getElementById('page-container');
+
+        function animateIn(container = pageContainer) {
+            if (!container) return Promise.resolve();
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // 第一段：左侧标题（tag -> 标题 -> p）
+            const phase1Selector = '.system-title .tag, .system-title h1, .system-title p';
+            const phase1Nodes = Array.from(container.querySelectorAll(phase1Selector)).filter(el => el instanceof HTMLElement && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
+
+            // 第二段：其余可见元素（排除画布、infoBox 与第一段）
+            const allNodes = Array.from(container.querySelectorAll('*')).filter(el => el instanceof HTMLElement && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
+            const phase1Set = new Set(phase1Nodes);
+            const phase2Nodes = allNodes.filter(el => !phase1Set.has(el) && !el.closest('#canvas-container') && !el.closest('#infoBox') && el.tagName.toLowerCase() !== 'script');
+
+            // 清理并添加初始隐藏类
+            const initNodes = Array.from(new Set([...phase1Nodes, ...phase2Nodes]));
+            initNodes.forEach(el => {
+                el.classList.remove('reveal-init', 'reveal-show');
+                el.style.transition = '';
+                el.style.transitionDelay = '';
+                el.style.opacity = '';
+                el.style.transform = '';
+            });
+            initNodes.forEach(el => el.classList.add('reveal-init'));
+
+            function staggerShow(nodes, baseDelay, step, duration) {
+                if (!nodes.length) return Promise.resolve();
+                if (reduced) {
+                    nodes.forEach(el => el.classList.add('reveal-show'));
+                    return Promise.resolve();
+                }
+                nodes.forEach((el, i) => {
+                    const delay = baseDelay + i * step;
+                    setTimeout(() => el.classList.add('reveal-show'), delay);
+                });
+                const total = baseDelay + nodes.length * step + duration + 80;
+                return new Promise(res => setTimeout(res, total));
+            }
+
+            return (async () => {
+                // 激活粒子入场动画
+                particlesEntranceActive = true;
+                entranceStartTime = Date.now();
+                
+                // 平行执行：粒子汇聚 + 两段UI粗移
+                await Promise.all([
+                    new Promise(res => setTimeout(res, entranceDuration)),
+                    (async () => {
+                        await staggerShow(phase1Nodes, 40, 80, 480);
+                        await staggerShow(phase2Nodes, 20, 25, 360);
+                    })()
+                ]);
+                
+                // 入场动画完成：清空拖影残留
+                particles.forEach(p => p.history = []);
+                largeOrbiters.forEach(o => o.history = []);
+                particlesEntranceActive = false;
+            })();
+        }
+
+            function animateOut(container = pageContainer) {
+                if (!container) return Promise.resolve();
+                const nodes = Array.from(container.querySelectorAll('*')).filter(el => el instanceof HTMLElement && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
+                nodes.forEach((el, i) => {
+                    el.style.transition = 'opacity 220ms cubic-bezier(.2,.8,.2,1), transform 220ms cubic-bezier(.2,.8,.2,1)';
+                    el.style.transitionDelay = (i * 12) + 'ms';
+                    requestAnimationFrame(() => {
+                        el.style.opacity = 0;
+                        el.style.transform = 'translateY(18px)';
+                    });
+                });
+                const total = Math.min(700, nodes.length * 12 + 220);
+                return new Promise(res => setTimeout(res, total));
+            }
+
+        async function navigateTo(url, replace=false) {
+            if (!pageContainer) { location.href = url; return; }
+            try {
+                await animateOut(pageContainer);
+                const res = await fetch(url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error('network');
+                const html = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContainer = doc.getElementById('page-container');
+                const newTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
+                if (newContainer) {
+                    pageContainer.innerHTML = newContainer.innerHTML;
+                } else {
+                    const candidate = doc.querySelector('main') || doc.querySelector('.main-layout') || doc.body;
+                    pageContainer.innerHTML = candidate ? candidate.innerHTML : html;
+                }
+                document.title = newTitle;
+                if (replace) history.replaceState({url, title: newTitle}, newTitle, url);
+                else history.pushState({url, title: newTitle}, newTitle, url);
+                // re-init page-dependent behaviors
+                stopLogs();
+                createLogs();
+                await animateIn(pageContainer);
+            } catch (err) {
+                console.error('PJAX load failed, fallback to full navigation', err);
+                location.href = url;
+            }
+        }
+
+        // delegate link clicks
+        document.addEventListener('click', (e) => {
+            const a = e.target.closest('a');
+            if (!a) return;
+            const href = a.getAttribute('href');
+            if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || a.target === '_blank' || href.startsWith('#') || a.hasAttribute('data-no-pjax')) return;
+            const url = new URL(href, location.href);
+            if (url.origin !== location.origin) return;
+            e.preventDefault();
+            navigateTo(url.href);
+        });
+
+        // handle back/forward
+        window.addEventListener('popstate', (e) => {
+            const url = location.href;
+            navigateTo(url, true);
+        });
+
+        // initial enter animation
+        window.addEventListener('load', () => {
+            animateIn(pageContainer);
+        });
+    </script>
+</body>
+</html>

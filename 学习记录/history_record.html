@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个性笔记 - 卫禾守护平台</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-navy: #0e2f5f;
+      --bg-blue: #f0f8ff;
+      --accent-yellow: #ffd166;
+      --accent-green: #06d6a0;
+      --accent-blue: #4cc9f0;
+      --white: #ffffff;
+      --stroke-width: 3px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+      background-color: var(--bg-blue);
+      /* 添加背景点阵纹理 */
+      background-image: radial-gradient(var(--primary-navy) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--primary-navy);
+      padding: 40px 20px;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      display: grid;
+      gap: 30px;
+    }
+
+    /* 卡片通用扁平描边风格 */
+    .flat-card {
+      background: var(--white);
+      border: var(--stroke-width) solid var(--primary-navy);
+      border-radius: 16px;
+      box-shadow: 8px 8px 0px var(--primary-navy);
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .flat-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 10px 10px 0px var(--primary-navy);
+    }
+
+    /* 顶部插画区域 */
+    .hero-section {
+      background: var(--white);
+      position: relative;
+      border-bottom: var(--stroke-width) solid var(--primary-navy);
+    }
+
+    .hero-text {
+      padding: 30px 40px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 2.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h1::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: var(--accent-yellow);
+      border: 2px solid var(--primary-navy);
+      border-radius: 50%;
+    }
+
+    .hero-text p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin: 0;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    /* 编辑器区域 */
+    .editor-section {
+      padding: 30px 40px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 800;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 1rem;
+      border: 2px solid var(--primary-navy);
+      border-radius: 8px;
+      background: #fafafa;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      background: var(--white);
+      box-shadow: 4px 4px 0px var(--accent-blue);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    /* 按钮样式 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 28px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      text-decoration: none;
+      border: 2px solid var(--primary-navy);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent-yellow);
+      color: var(--primary-navy);
+      box-shadow: 4px 4px 0px var(--primary-navy);
+    }
+
+    .btn-primary:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0px 0px 0px var(--primary-navy);
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--primary-navy);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-blue);
+    }
+
+    /* 近期笔记展示区 */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .note-card {
+      background: var(--white);
+      border: 2px solid var(--primary-navy);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .note-card::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 100%;
+      height: 100%;
+      background: var(--accent-green);
+      border: 2px solid var(--primary-navy);
+      border-radius: 12px;
+      z-index: -1;
+    }
+
+    .note-card:nth-child(2)::after { background: var(--accent-blue); }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      background: var(--primary-navy);
+      color: var(--white);
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .note-card h3 { margin: 0 0 10px 0; font-size: 1.2rem; }
+    .note-card p { margin: 0; font-size: 0.95rem; opacity: 0.8; line-height: 1.5; }
+
+    @media (max-width: 600px) {
+      .hero-text, .editor-section { padding: 20px; }
+      .actions { flex-direction: column; gap: 15px; }
+      .btn { width: 100%; }
+    }
+    </style>
+    <style>
+      /* 限定容器：为笔记页设置相对定位 */
+      #history-root { position: relative; }
+
+      /* 全局丝滑入场弹出动画（wh-popin，仅限 #history-root） */
+      #history-root .wh-popin { opacity: 0; transform: translateY(10px) scale(0.98); will-change: transform, opacity; }
+      #history-root .wh-popin.wh-popin-animate { animation: whPopIn 520ms cubic-bezier(.2,.9,.3,1) both; }
+      @keyframes whPopIn {
+        0% { opacity: 0; transform: translateY(14px) scale(0.96); }
+        60% { opacity: 1; transform: translateY(-6px) scale(1.02); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      /* 小弹幕（矢量风格，仅限 #history-root） */
+      #history-root #wh-danmaku-wrap { position: absolute; top: 12px; right: 12px; width: calc(100% - 24px); height: 0; pointer-events: none; z-index: 2200; overflow: visible; }
+      #history-root .danmaku { position: absolute; right: 12px; display: inline-flex; align-items: center; gap: 10px; pointer-events: none; opacity: 0; transform: translateX(0) translateY(0); white-space: nowrap; }
+      #history-root .danmaku svg { flex: none; width: 56px; height: 40px; display:block; }
+      #history-root .danmaku .bubble { background: linear-gradient(180deg, var(--white,#fff), #fbfbfb); border: 2px solid var(--primary-navy, var(--text, #0e2f5f)); padding: 8px 12px; border-radius: 12px; font-weight: 700; color: var(--primary-navy, var(--text, #0e2f5f)); box-shadow: 6px 6px 0 var(--primary-navy, var(--text, #0e2f5f)); font-size: 0.96rem; }
+      /* 使用匀速线性动画，减少加速/回弹，默认时长放慢为 10s（可被 --duration 覆盖） */
+      #history-root .danmaku.animate { animation: danmakuMove var(--duration, 10000ms) linear forwards; }
+      @keyframes danmakuMove {
+        0% { opacity: 0; transform: translateX(0) translateY(0) scale(.98); }
+        /* 快速淡入后保持匀速水平移动 */
+        6% { opacity: 1; }
+        94% { opacity: 1; transform: translateX(-100vw) translateY(-28px) scale(1); }
+        100% { opacity: 0; transform: translateX(-110vw) translateY(-28px) scale(1); }
+      }
+      @media (max-width:720px) { #history-root #wh-danmaku-wrap { display:none; } }
+    </style>
+  </head>
+<body>
+
+  <div id="history-root" class="container">
+    
+    <div class="flat-card">
+      
+      <div class="hero-section">
+        <svg viewBox="0 0 900 220" width="100%" height="220" style="display: block; background: #e8f4fd;">
+          <defs>
+            <pattern id="dot-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="2" fill="#0e2f5f" opacity="0.3"></circle>
+            </pattern>
+            <pattern id="line-pattern" x="0" y="0" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#0e2f5f" stroke-width="2"></line>
+            </pattern>
+          </defs>
+
+          <rect x="550" y="30" width="300" height="160" rx="20" fill="url(#dot-pattern)" />
+          <rect x="540" y="20" width="300" height="160" rx="20" fill="#ffd166" stroke="#0e2f5f" stroke-width="3" />
+
+          <rect x="580" y="60" width="100" height="140" rx="8" fill="url(#line-pattern)" stroke="#0e2f5f" stroke-width="3" />
+          <rect x="570" y="50" width="100" height="140" rx="8" fill="#ffffff" stroke="#0e2f5f" stroke-width="3" />
+          <line x1="590" y1="80" x2="650" y2="80" stroke="#0e2f5f" stroke-width="3" stroke-linecap="round"/>
+          <line x1="590" y1="100" x2="630" y2="100" stroke="#0e2f5f" stroke-width="3" stroke-linecap="round"/>
+          
+          <path d="M 750 180 L 730 110 L 790 110 Z" fill="url(#dot-pattern)" />
+          <path d="M 740 170 L 720 100 L 780 100 Z" fill="#4cc9f0" stroke="#0e2f5f" stroke-width="3" />
+          <path d="M 750 100 Q 720 50 750 20 Q 780 50 750 100" fill="#06d6a0" stroke="#0e2f5f" stroke-width="3" />
+          <path d="M 730 100 Q 690 70 700 40 Q 740 60 730 100" fill="#06d6a0" stroke="#0e2f5f" stroke-width="3" />
+          <path d="M 770 100 Q 810 70 800 40 Q 760 60 770 100" fill="#06d6a0" stroke="#0e2f5f" stroke-width="3" />
+
+          <g transform="translate(620, 150) rotate(-45)">
+            <rect x="0" y="0" width="80" height="16" fill="#ff9f1c" stroke="#0e2f5f" stroke-width="3" />
+            <polygon points="80,0 100,8 80,16" fill="#fbc4ab" stroke="#0e2f5f" stroke-width="3" />
+            <polygon points="94,6 100,8 94,10" fill="#0e2f5f" />
+          </g>
+        </svg>
+
+        <div class="hero-text">
+          <h1>个性笔记</h1>
+          <p>在这里，你可以随时记录学习心得、法治感悟、生活点滴。用文字丈量成长的脚步，打造专属于你的思想麦田。</p>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <div class="form-group">
+          <label for="note-title">标题 / Title</label>
+          <input type="text" id="note-title" placeholder="给你的想法起个响亮的名字吧...">
+        </div>
+        
+        <div class="form-group" style="display: flex; gap: 20px;">
+          <div style="flex: 1;">
+            <label for="note-category">分类 / Category</label>
+            <select id="note-category">
+              <option>✨ 法治感悟</option>
+              <option>📚 学习心得</option>
+              <option>🌱 生活点滴</option>
+              <option>💡 灵感闪现</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label for="note-tags">标签 / Tags</label>
+            <input type="text" id="note-tags" placeholder="如：未成年人保护, 创新...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="note-content">正文 / Content</label>
+          <textarea id="note-content" placeholder="写下你此刻的想法...定期回顾，有助于发现进步与不足哦！"></textarea>
+        </div>
+
+        <div class="actions">
+          <a href="../training.html" class="btn btn-secondary">← 返回学习页面</a>
+          <button class="btn btn-primary">保存笔记 (Save)</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2 style="font-weight: 800; font-size: 1.5rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-block; width: 12px; height: 12px; background: #0e2f5f; border-radius: 50%;"></span>
+        近期回顾
+      </h2>
+      <div class="notes-grid">
+        <div class="note-card">
+          <span class="tag">法治感悟</span>
+          <h3>模拟场景学习反思</h3>
+          <p>今天体验了社区矫正的模拟场景，发现理论知识和实际应用之间还有很大差距。特别是监控数据的异常反馈机制，需要更深入了解...</p>
+        </div>
+        <div class="note-card">
+          <span class="tag">灵感闪现</span>
+          <h3>平台功能优化想法</h3>
+          <p>或许可以在平台上增加一个互动问答区？让孩子们在遇到问题时能更快找到指导。UI设计上还可以加入更多温暖的色调...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <script>
+    (function() {
+      function applyPopIns() {
+        const max = 500;
+        const step = 45;
+        const root = document.getElementById('history-root');
+        const nodes = root ? Array.from(root.querySelectorAll('*:not(script):not(style):not(link):not(meta)')) : [];
+        const visible = nodes.filter(el => {
+          const st = getComputedStyle(el);
+          if (st.display === 'none' || st.visibility === 'hidden' || +st.opacity === 0) return false;
+          const r = el.getBoundingClientRect();
+          return (r.width > 0 || r.height > 0);
+        }).slice(0, max);
+
+        visible.forEach((el, i) => {
+          el.classList.add('wh-popin');
+          el.style.animationDelay = (i * step) + 'ms';
+          requestAnimationFrame(() => el.classList.add('wh-popin-animate'));
+        });
+
+        // 计算入场动画的最长等待时间：最后一项的延迟 + 动画时长 + 缓冲
+        const animDuration = 520; // 与 CSS 中 whPopIn 动画持续时间一致
+        const totalWait = (visible.length > 0) ? ((Math.max(0, visible.length - 1) * step) + animDuration + 160) : 0;
+
+        if (totalWait <= 0) {
+          // 无可见元素时立即标记完成并触发事件
+          window.__history_popins_done = true;
+          document.dispatchEvent(new CustomEvent('history-popins-done'));
+          return;
+        }
+
+        setTimeout(() => {
+          visible.forEach(el => el.style.animationDelay = '');
+          // 标记完成，通知其他脚本（如弹幕）可以启动
+          window.__history_popins_done = true;
+          document.dispatchEvent(new CustomEvent('history-popins-done'));
+        }, totalWait);
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyPopIns, {once:true});
+      else applyPopIns();
+    })();
+  </script>
+  <script>
+    (function(){
+      const samples = [
+        '张三：学法让我更明白如何保护自己。',
+        '李华：遇到问题要及时向老师与家长求助。',
+        '小明：网络隐私很重要，别轻易透露。',
+        '小红：法律是我们成长的护盾，学起来。',
+        '王二：实践中学会用规则解决争端。'
+      ];
+      function esc(s){ return String(s).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+      function createWrap(){ let w=document.getElementById('wh-danmaku-wrap'); if(!w){ w=document.createElement('div'); w.id='wh-danmaku-wrap'; const root=document.getElementById('history-root') || document.body; root.appendChild(w);} return w; }
+      let counter=0;
+      function spawn(msg){
+        const wrap=createWrap();
+        const el=document.createElement('div'); el.className='danmaku';
+        const lane = counter % 5;
+        const top = 8 + lane * 42 + Math.round((Math.random()-0.5)*14);
+        el.style.top = top + 'px';
+        const dur = 9000 + Math.round(Math.random()*5000);
+        el.style.setProperty('--duration', dur+'ms');
+        const svg = '<svg viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="0" y="0" width="64" height="40" rx="8" fill="none" stroke="var(--primary-navy, #0e2f5f)" stroke-width="2"/><circle cx="14" cy="20" r="8" fill="var(--accent-green, #06d6a0)" stroke="var(--primary-navy, #0e2f5f)" stroke-width="2"/></svg>';
+        el.innerHTML = svg + '<div class="bubble">'+esc(msg)+'</div>';
+        wrap.appendChild(el);
+        requestAnimationFrame(()=> el.classList.add('animate'));
+        setTimeout(()=>{ try{ el.remove(); }catch(e){} }, dur + 700);
+        counter++;
+        if(wrap.children.length>12) wrap.removeChild(wrap.children[0]);
+      }
+      function start(){
+        let i=0; spawn(samples[i++%samples.length]);
+        const t = setInterval(()=>{ if(document.visibilityState==='hidden') return; spawn(samples[i++%samples.length]); }, 2000);
+        document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') clearInterval(t); });
+      }
+      // 等待入场动画完成后再启动弹幕，防止弹幕抢占初始视觉节奏
+      function waitForPopinsThenStart() {
+        if (window.__history_popins_done) {
+          start();
+        } else {
+          // 正常路径：等待事件
+          document.addEventListener('history-popins-done', start, { once: true });
+          // 兜底：若事件未触发，最多再等 8s 后启动以免完全不显示弹幕
+          setTimeout(() => { if (!window.__history_popins_done) start(); }, 8000);
+        }
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', waitForPopinsThenStart, { once: true });
+      else waitForPopinsThenStart();
+    })();
+  </script>
+</body>
+</html>
